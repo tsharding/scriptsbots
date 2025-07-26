@@ -68,9 +68,22 @@ GLView::GLView(World *s) :
         lastUpdate(0)
 {
 
-    xtranslate= 0.0;
-    ytranslate= 0.0;
-    scalemult= 0.2; //1.0;
+    // Calculate initial zoom to fit world in window
+    float worldAspectRatio = (float)conf::WIDTH / conf::HEIGHT;
+    float windowAspectRatio = (float)conf::WWIDTH / conf::WHEIGHT;
+    
+    if (worldAspectRatio > windowAspectRatio) {
+        // World is wider than window - fit to width
+        scalemult = (float)conf::WWIDTH / conf::WIDTH;
+    } else {
+        // World is taller than window - fit to height
+        scalemult = (float)conf::WHEIGHT / conf::HEIGHT;
+    }
+    
+    // Center the world in the window
+    xtranslate = -conf::WIDTH / 2.0f;
+    ytranslate = -conf::HEIGHT / 2.0f;
+    
     downb[0]=0;downb[1]=0;downb[2]=0;
     mousex=0;mousey=0;
     
@@ -95,7 +108,7 @@ void GLView::processMouse(int button, int state, int x, int y)
     
     // Handle mouse wheel events (button 3 = wheel up, button 4 = wheel down)
     if (button == 3 || button == 4) {
-        float zoomFactor = 0.05f; // How much to zoom per wheel click (reduced sensitivity)
+        float zoomFactor = 0.03f; // How much to zoom per wheel click (reduced sensitivity)
         float oldScale = scalemult;
         
         if (button == 3) {

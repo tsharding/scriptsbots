@@ -48,8 +48,7 @@ void StatsWindow::createWindow()
     
     glutDisplayFunc(gl_renderStatsScene);
     glutReshapeFunc(gl_changeStatsSize);
-    glutKeyboardFunc(gl_processStatsKeys);
-    // Don't set mouse functions - stats window should not handle mouse events
+    // Don't set keyboard or mouse functions - let main window handle all input
 }
 
 void StatsWindow::gl_renderStatsScene()
@@ -86,12 +85,11 @@ void StatsWindow::changeSize(int w, int h)
 
 void StatsWindow::processKeys(unsigned char key, int x, int y)
 {
-    // Forward all key events to the main window
+    // Handle key events directly in stats window without switching context
+    // This prevents interference with main window rendering
     if (GLVIEW) {
-        int currentWindow = glutGetWindow();
-        glutSetWindow(1); // Switch to main window
+        // Call the main window's key handler directly without window switching
         GLVIEW->processNormalKeys(key, x, y);
-        glutSetWindow(currentWindow); // Return to stats window
     }
 }
 

@@ -199,12 +199,17 @@ void GLView::handleIdle()
         while (clock() < endwait) {}
     }
 
-    // Only render if this is the main window
-    if (glutGetWindow() == 1 && draw) {
+    // Always render the main window if drawing is enabled
+    if (draw) {
+        int currentWindow = glutGetWindow();
+        glutSetWindow(1); // Ensure we're rendering to main window
         if (skipdraw>0) {
             if (modcounter%skipdraw==0) renderScene();    //increase fps by skipping drawing
         }
         else renderScene(); //we will decrease fps by waiting using clocks
+        if (currentWindow != 1) {
+            glutSetWindow(currentWindow); // Restore previous window context
+        }
     }
 }
 

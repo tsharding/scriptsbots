@@ -46,6 +46,9 @@ int main(int argc, char **argv) {
     // Create stats window
     STATSWINDOW = new StatsWindow(world);
     StatsWindow::createWindow();
+    
+    // Set the main window as the current window
+    glutSetWindow(mainWindowId);
 
     glutMainLoop();
     return 0;

@@ -5,7 +5,7 @@ OPENGL_FLAGS = -lGL -lGLU
 OPENMP_FLAGS = -fopenmp
 
 # Source files
-SOURCES = View.cpp GLView.cpp StatsWindow.cpp main.cpp DWRAONBrain.cpp MLPBrain.cpp AssemblyBrain.cpp Agent.cpp World.cpp vmath.cpp
+SOURCES = View.cpp GLView.cpp StatsWindow.cpp main.cpp MLPBrain.cpp Agent.cpp World.cpp vmath.cpp
 
 # Object files
 OBJECTS = $(SOURCES:.cpp=.o)

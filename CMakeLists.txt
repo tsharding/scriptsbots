@@ -32,9 +32,7 @@ set( SB_SRCS
     View.cpp
     GLView.cpp
     main.cpp
-    DWRAONBrain.cpp
     MLPBrain.cpp
-    AssemblyBrain.cpp
     Agent.cpp
     World.cpp
     vmath.cpp )

@@ -1,0 +1,36 @@
+CXX = g++
+CXXFLAGS = -std=c++11 -Wall -Wextra -O2
+GLUT_FLAGS = $(shell pkg-config --cflags --libs glut)
+OPENGL_FLAGS = -lGL -lGLU
+OPENMP_FLAGS = -fopenmp
+
+# Source files
+SOURCES = View.cpp GLView.cpp main.cpp DWRAONBrain.cpp MLPBrain.cpp AssemblyBrain.cpp Agent.cpp World.cpp vmath.cpp
+
+# Object files
+OBJECTS = $(SOURCES:.cpp=.o)
+
+# Target executable
+TARGET = scriptbots
+
+# Default target
+all: $(TARGET)
+
+# Link the executable
+$(TARGET): $(OBJECTS)
+	$(CXX) $(OBJECTS) -o $(TARGET) $(GLUT_FLAGS) $(OPENGL_FLAGS) $(OPENMP_FLAGS)
+
+# Compile source files
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Clean build files
+clean:
+	rm -f $(OBJECTS) $(TARGET)
+
+# Install dependencies (Ubuntu/Debian)
+install-deps:
+	sudo apt update
+	sudo apt install -y build-essential cmake freeglut3-dev libgl1-mesa-dev libglu1-mesa-dev
+
+.PHONY: all clean install-deps 

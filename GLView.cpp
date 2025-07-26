@@ -93,6 +93,34 @@ void GLView::processMouse(int button, int state, int x, int y)
 {
     //printf("MOUSE EVENT: button=%i state=%i x=%i y=%i\n", button, state, x, y);
     
+    // Handle mouse wheel events (button 3 = wheel up, button 4 = wheel down)
+    if (button == 3 || button == 4) {
+        float zoomFactor = 0.05f; // How much to zoom per wheel click (reduced sensitivity)
+        float oldScale = scalemult;
+        
+        if (button == 3) {
+            // Wheel up - zoom in
+            scalemult += zoomFactor;
+        } else {
+            // Wheel down - zoom out
+            scalemult -= zoomFactor;
+        }
+        
+        // Clamp zoom to reasonable limits
+        if (scalemult < 0.01f) scalemult = 0.01f;
+        if (scalemult > 5.0f) scalemult = 5.0f;
+        
+        // Adjust translation to zoom towards mouse cursor
+        float mouseXWorld = (x - conf::WWIDTH/2) / oldScale - xtranslate;
+        float mouseYWorld = (y - conf::WHEIGHT/2) / oldScale - ytranslate;
+        
+        xtranslate = (x - conf::WWIDTH/2) / scalemult - mouseXWorld;
+        ytranslate = (y - conf::WHEIGHT/2) / scalemult - mouseYWorld;
+        
+        mousex = x; mousey = y;
+        return;
+    }
+    
     //have world deal with it. First translate to world coordinates though
     if(button==0){
         int wx= (int) ((x-conf::WWIDTH/2)/scalemult)-xtranslate;

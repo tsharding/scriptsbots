@@ -282,4 +282,8 @@ void StatsWindow::drawControlsInfo()
     
     sprintf(buf, "Middle Drag - Zoom");
     RenderString(20, yPos, GLUT_BITMAP_HELVETICA_12, buf, 0.0f, 0.0f, 0.0f);
+    yPos += 15;
+    
+    sprintf(buf, "Mouse Wheel - Zoom in/out");
+    RenderString(20, yPos, GLUT_BITMAP_HELVETICA_12, buf, 0.0f, 0.0f, 0.0f);
 } 

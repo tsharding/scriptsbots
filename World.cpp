@@ -59,6 +59,23 @@ void World::update()
     if (modcounter>=10000) {
         modcounter=0;
         current_epoch++;
+        
+        // Population recovery: if carnivores or herbivores are at 0, spawn 25 random agents of that type
+        std::pair<int,int> num_herbs_carns = numHerbCarnivores();
+        
+        if (num_herbs_carns.second == 0) { // No carnivores
+            printf("Carnivore population extinct! Spawning 25 new carnivores.\n");
+            for (int i = 0; i < 25; i++) {
+                addCarnivore();
+            }
+        }
+        
+        if (num_herbs_carns.first == 0) { // No herbivores
+            printf("Herbivore population extinct! Spawning 25 new herbivores.\n");
+            for (int i = 0; i < 25; i++) {
+                addHerbivore();
+            }
+        }
     }
     
     // Auto-save based on frequency setting

@@ -271,6 +271,14 @@ void StatsWindow::drawControlsInfo()
     RenderString(20, yPos, GLUT_BITMAP_HELVETICA_12, buf, 0.0f, 0.0f, 0.0f);
     yPos += 15;
     
+    sprintf(buf, "v - Save simulation state");
+    RenderString(20, yPos, GLUT_BITMAP_HELVETICA_12, buf, 0.0f, 0.0f, 0.0f);
+    yPos += 15;
+    
+    sprintf(buf, "l - Load simulation state");
+    RenderString(20, yPos, GLUT_BITMAP_HELVETICA_12, buf, 0.0f, 0.0f, 0.0f);
+    yPos += 15;
+    
     sprintf(buf, "+/- - Speed control");
     RenderString(20, yPos, GLUT_BITMAP_HELVETICA_12, buf, 0.0f, 0.0f, 0.0f);
     yPos += 15;

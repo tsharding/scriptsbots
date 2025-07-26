@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <stdio.h>
+#include <fstream>
 
 class MLPBox {
 public:
@@ -41,6 +42,10 @@ public:
     void tick(std::vector<float>& in, std::vector<float>& out);
     void mutate(float MR, float MR2);
     MLPBrain crossover( const MLPBrain &other );
+    
+    // Save/Load functionality
+    void saveToStream(std::ofstream& file) const;
+    void loadFromStream(std::ifstream& file);
 private:
     void init();
 };

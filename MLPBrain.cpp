@@ -205,3 +205,73 @@ MLPBrain MLPBrain::crossover(const MLPBrain& other)
     return newbrain;
 }
 
+void MLPBrain::saveToStream(std::ofstream& file) const
+{
+    // Save number of boxes
+    size_t numBoxes = boxes.size();
+    file.write(reinterpret_cast<const char*>(&numBoxes), sizeof(numBoxes));
+    
+    // Save each box
+    for (const MLPBox& box : boxes) {
+        // Save weights
+        size_t wSize = box.w.size();
+        file.write(reinterpret_cast<const char*>(&wSize), sizeof(wSize));
+        file.write(reinterpret_cast<const char*>(box.w.data()), wSize * sizeof(float));
+        
+        // Save IDs
+        size_t idSize = box.id.size();
+        file.write(reinterpret_cast<const char*>(&idSize), sizeof(idSize));
+        file.write(reinterpret_cast<const char*>(box.id.data()), idSize * sizeof(int));
+        
+        // Save types
+        size_t typeSize = box.type.size();
+        file.write(reinterpret_cast<const char*>(&typeSize), sizeof(typeSize));
+        file.write(reinterpret_cast<const char*>(box.type.data()), typeSize * sizeof(int));
+        
+        // Save other properties
+        file.write(reinterpret_cast<const char*>(&box.kp), sizeof(box.kp));
+        file.write(reinterpret_cast<const char*>(&box.gw), sizeof(box.gw));
+        file.write(reinterpret_cast<const char*>(&box.bias), sizeof(box.bias));
+        file.write(reinterpret_cast<const char*>(&box.target), sizeof(box.target));
+        file.write(reinterpret_cast<const char*>(&box.out), sizeof(box.out));
+        file.write(reinterpret_cast<const char*>(&box.oldout), sizeof(box.oldout));
+    }
+}
+
+void MLPBrain::loadFromStream(std::ifstream& file)
+{
+    // Load number of boxes
+    size_t numBoxes;
+    file.read(reinterpret_cast<char*>(&numBoxes), sizeof(numBoxes));
+    boxes.resize(numBoxes);
+    
+    // Load each box
+    for (MLPBox& box : boxes) {
+        // Load weights
+        size_t wSize;
+        file.read(reinterpret_cast<char*>(&wSize), sizeof(wSize));
+        box.w.resize(wSize);
+        file.read(reinterpret_cast<char*>(box.w.data()), wSize * sizeof(float));
+        
+        // Load IDs
+        size_t idSize;
+        file.read(reinterpret_cast<char*>(&idSize), sizeof(idSize));
+        box.id.resize(idSize);
+        file.read(reinterpret_cast<char*>(box.id.data()), idSize * sizeof(int));
+        
+        // Load types
+        size_t typeSize;
+        file.read(reinterpret_cast<char*>(&typeSize), sizeof(typeSize));
+        box.type.resize(typeSize);
+        file.read(reinterpret_cast<char*>(box.type.data()), typeSize * sizeof(int));
+        
+        // Load other properties
+        file.read(reinterpret_cast<char*>(&box.kp), sizeof(box.kp));
+        file.read(reinterpret_cast<char*>(&box.gw), sizeof(box.gw));
+        file.read(reinterpret_cast<char*>(&box.bias), sizeof(box.bias));
+        file.read(reinterpret_cast<char*>(&box.target), sizeof(box.target));
+        file.read(reinterpret_cast<char*>(&box.out), sizeof(box.out));
+        file.read(reinterpret_cast<char*>(&box.oldout), sizeof(box.oldout));
+    }
+}
+

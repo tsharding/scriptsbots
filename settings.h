@@ -43,6 +43,8 @@ namespace conf {
     const float FOOD_DISTRIBUTION_RADIUS=100; //when bot is killed, how far is its body distributed?
     
     const float REPMULT = 5; //when a body of dead animal is distributed, how much of it goes toward increasing birth counter for surrounding bots?
+    
+    const int AUTOSAVE_FREQUENCY = 100; //how often (in epochs) to auto-save the simulation state
 }
 
 #endif

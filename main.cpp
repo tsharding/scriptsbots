@@ -23,10 +23,45 @@ int main(int argc, char **argv) {
     printf("- Main window: World visualization\n");
     printf("- Stats window: Population chart and controls\n");
     printf("Both windows respond to keyboard input.\n");
+    printf("Usage: %s [--help] [--load <save_file>]\n", argv[0]);
+    printf("  --help: Show this help message and exit\n");
+    printf("  --load <save_file>: Load a save file from the save directory on startup (e.g., manual_save_0.sav)\n");
     
-    World* world = new World();
-    GLVIEW->setWorld(world);
-
+    World* world = nullptr;
+    
+    // Handle command-line arguments
+    if (argc > 1) {
+        std::string arg1 = argv[1];
+        if (arg1 == "--help") {
+            // Help requested
+            return 0;
+        } else if (arg1 == "--load") {
+            if (argc < 3) {
+                printf("ERROR: --load requires a filename argument.\n");
+                return 1;
+            }
+            std::string saveFile = argv[2];
+            printf("Attempting to load save file: %s\n", saveFile.c_str());
+            world = new World();
+            GLVIEW->setWorld(world);
+            if (world->loadFromFile(saveFile)) {
+                printf("Successfully loaded save file: %s\n", saveFile.c_str());
+            } else {
+                printf("ERROR: Failed to load save file: %s\n", saveFile.c_str());
+                printf("Exiting. Please check the file name and try again.\n");
+                exit(1);
+            }
+            // Continue to GLUT setup below
+        } else {
+            printf("ERROR: Unknown argument '%s'. Use --help for usage.\n", arg1.c_str());
+            return 1;
+        }
+    } else {
+        // No arguments provided, create new simulation
+        world = new World();
+        GLVIEW->setWorld(world);
+    }
+    
     //GLUT SETUP
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);

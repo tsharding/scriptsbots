@@ -9,6 +9,8 @@
 #endif
 
 #include <stdio.h>
+#include <sys/stat.h>
+#include <time.h>
 
 void gl_processNormalKeys(unsigned char key, int x, int y)
 {
@@ -195,6 +197,84 @@ void GLView::processNormalKeys(unsigned char key, int x, int y)
         drawfood=!drawfood;
     } else if (key=='g') {
         showAgentInfo=!showAgentInfo;
+    } else if (key=='v') {
+        // Save simulation state
+        std::string saveName = "manual_save_" + std::to_string(world->epoch()) + ".sav";
+        if (world->saveToFile(saveName)) {
+            printf("Manual save successful: %s\n", saveName.c_str());
+        } else {
+            printf("Manual save failed!\n");
+        }
+    } else if (key=='l') {
+        // Load simulation state - find and load the most recent save file
+        bool loaded = false;
+        
+        // Function to find the most recent save file
+        std::string saveDir = world->getSaveDirectory();
+        auto findMostRecentSave = [saveDir](const std::string& prefix) -> std::string {
+            std::string mostRecentFile = "";
+            time_t mostRecentTime = 0;
+            
+            // Check files from epoch 0 to 1000 (should be enough)
+            for (int epoch = 0; epoch <= 1000; epoch++) {
+                std::string filename = saveDir + prefix + std::to_string(epoch) + ".sav";
+                FILE* file = fopen(filename.c_str(), "rb");
+                if (file) {
+                    // Get file modification time
+                    struct stat fileStat;
+                    if (stat(filename.c_str(), &fileStat) == 0) {
+                        if (fileStat.st_mtime > mostRecentTime) {
+                            mostRecentTime = fileStat.st_mtime;
+                            mostRecentFile = prefix + std::to_string(epoch) + ".sav";
+                        }
+                    }
+                    fclose(file);
+                }
+            }
+            return mostRecentFile;
+        };
+        
+        // Find the most recent save file across all types
+        std::string mostRecentFile = "";
+        time_t mostRecentTime = 0;
+        
+        // Check manual saves
+        std::string mostRecentManual = findMostRecentSave("manual_save_");
+        if (!mostRecentManual.empty()) {
+            mostRecentFile = mostRecentManual;
+        }
+        
+        // Check autosaves and compare timestamps
+        std::string mostRecentAuto = findMostRecentSave("autosave_epoch_");
+        if (!mostRecentAuto.empty()) {
+            // Compare timestamps by checking the actual files
+            std::string manualPath = saveDir + mostRecentManual;
+            std::string autoPath = saveDir + mostRecentAuto;
+            
+            struct stat manualStat, autoStat;
+            bool manualExists = (stat(manualPath.c_str(), &manualStat) == 0);
+            bool autoExists = (stat(autoPath.c_str(), &autoStat) == 0);
+            
+            if (manualExists && autoExists) {
+                if (autoStat.st_mtime > manualStat.st_mtime) {
+                    mostRecentFile = mostRecentAuto;
+                }
+            } else if (autoExists) {
+                mostRecentFile = mostRecentAuto;
+            }
+        }
+        
+        // Load the most recent file found
+        if (!mostRecentFile.empty()) {
+            if (world->loadFromFile(mostRecentFile)) {
+                printf("Load successful: %s\n", mostRecentFile.c_str());
+                loaded = true;
+            }
+        }
+        
+        if (!loaded) {
+            printf("No save files found to load!\n");
+        }
     } else if (key=='a') {
         for (int i=0;i<10;i++){world->addNewByCrossover();}
     } else if (key=='q') {

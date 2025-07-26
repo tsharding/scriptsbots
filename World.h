@@ -5,6 +5,8 @@
 #include "Agent.h"
 #include "settings.h"
 #include <vector>
+#include <string>
+#include <fstream>
 class World
 {
 public:
@@ -39,6 +41,11 @@ public:
     void addHerbivore();
     
     void positionOfInterest(int type, float &xi, float &yi);
+    
+    // Save/Load functionality
+    std::string getSaveDirectory() const;
+    bool saveToFile(const std::string& filename);
+    bool loadFromFile(const std::string& filename);
     
     std::vector<int> numCarnivore;
     std::vector<int> numHerbivore;

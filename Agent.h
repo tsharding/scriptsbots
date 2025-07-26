@@ -24,6 +24,10 @@ public:
     Agent reproduce(float MR, float MR2);
     Agent crossover(const Agent &other);
     
+    // Save/Load functionality
+    void saveToStream(std::ofstream& file) const;
+    void loadFromStream(std::ifstream& file);
+    
     Vector2f pos;
 
     float health; //in [0,2]. I cant remember why.

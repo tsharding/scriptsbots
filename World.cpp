@@ -60,6 +60,13 @@ void World::update()
         modcounter=0;
         current_epoch++;
     }
+    
+    // Auto-save based on frequency setting
+    if (modcounter == 0 && current_epoch % conf::AUTOSAVE_FREQUENCY == 0 && current_epoch > 0) {
+        std::string autosaveName = "autosave_epoch_" + std::to_string(current_epoch) + ".sav";
+        saveToFile(autosaveName);
+        printf("Auto-saved simulation state to %s\n", autosaveName.c_str());
+    }
     if (modcounter%conf::FOODADDFREQ==0) {
         fx=randi(0,FW);
         fy=randi(0,FH);
@@ -681,5 +688,113 @@ int World::numAgents() const
 int World::epoch() const
 {
     return current_epoch;
+}
+
+std::string World::getSaveDirectory() const
+{
+    return "scriptbots_save_files/";
+}
+
+bool World::saveToFile(const std::string& filename)
+{
+    std::string fullPath = getSaveDirectory() + filename;
+    std::ofstream file(fullPath, std::ios::binary);
+    if (!file.is_open()) {
+        printf("Error: Could not open file %s for writing\n", fullPath.c_str());
+        return false;
+    }
+    
+    // Write file header
+    const char* header = "SCRIPTBOTS_SAVE";
+    file.write(header, 15);
+    
+    // Write world state
+    file.write(reinterpret_cast<const char*>(&modcounter), sizeof(modcounter));
+    file.write(reinterpret_cast<const char*>(&current_epoch), sizeof(current_epoch));
+    file.write(reinterpret_cast<const char*>(&idcounter), sizeof(idcounter));
+    file.write(reinterpret_cast<const char*>(&CLOSED), sizeof(CLOSED));
+    
+    // Write food grid
+    file.write(reinterpret_cast<const char*>(&FW), sizeof(FW));
+    file.write(reinterpret_cast<const char*>(&FH), sizeof(FH));
+    file.write(reinterpret_cast<const char*>(&fx), sizeof(fx));
+    file.write(reinterpret_cast<const char*>(&fy), sizeof(fy));
+    file.write(reinterpret_cast<const char*>(food), sizeof(food));
+    
+    // Write population history
+    size_t herbSize = numHerbivore.size();
+    size_t carnSize = numCarnivore.size();
+    file.write(reinterpret_cast<const char*>(&herbSize), sizeof(herbSize));
+    file.write(reinterpret_cast<const char*>(&carnSize), sizeof(carnSize));
+    file.write(reinterpret_cast<const char*>(numHerbivore.data()), herbSize * sizeof(int));
+    file.write(reinterpret_cast<const char*>(numCarnivore.data()), carnSize * sizeof(int));
+    
+    // Write agents
+    size_t numAgents = agents.size();
+    file.write(reinterpret_cast<const char*>(&numAgents), sizeof(numAgents));
+    for (const Agent& agent : agents) {
+        agent.saveToStream(file);
+    }
+    
+    file.close();
+    printf("Simulation state saved to %s\n", fullPath.c_str());
+    return true;
+}
+
+bool World::loadFromFile(const std::string& filename)
+{
+    std::string fullPath = getSaveDirectory() + filename;
+    std::ifstream file(fullPath, std::ios::binary);
+    if (!file.is_open()) {
+        printf("Error: Could not open file %s for reading\n", fullPath.c_str());
+        return false;
+    }
+    
+    // Read and verify file header
+    char header[16];
+    file.read(header, 15);
+    header[15] = '\0';
+    if (strcmp(header, "SCRIPTBOTS_SAVE") != 0) {
+        printf("Error: Invalid save file format\n");
+        file.close();
+        return false;
+    }
+    
+    // Read world state
+    file.read(reinterpret_cast<char*>(&modcounter), sizeof(modcounter));
+    file.read(reinterpret_cast<char*>(&current_epoch), sizeof(current_epoch));
+    file.read(reinterpret_cast<char*>(&idcounter), sizeof(idcounter));
+    file.read(reinterpret_cast<char*>(&CLOSED), sizeof(CLOSED));
+    
+    // Read food grid
+    file.read(reinterpret_cast<char*>(&FW), sizeof(FW));
+    file.read(reinterpret_cast<char*>(&FH), sizeof(FH));
+    file.read(reinterpret_cast<char*>(&fx), sizeof(fx));
+    file.read(reinterpret_cast<char*>(&fy), sizeof(fy));
+    file.read(reinterpret_cast<char*>(food), sizeof(food));
+    
+    // Read population history
+    size_t herbSize, carnSize;
+    file.read(reinterpret_cast<char*>(&herbSize), sizeof(herbSize));
+    file.read(reinterpret_cast<char*>(&carnSize), sizeof(carnSize));
+    numHerbivore.resize(herbSize);
+    numCarnivore.resize(carnSize);
+    file.read(reinterpret_cast<char*>(numHerbivore.data()), herbSize * sizeof(int));
+    file.read(reinterpret_cast<char*>(numCarnivore.data()), carnSize * sizeof(int));
+    
+    // Read agents
+    size_t numAgents;
+    file.read(reinterpret_cast<char*>(&numAgents), sizeof(numAgents));
+    agents.clear();
+    agents.reserve(numAgents);
+    for (size_t i = 0; i < numAgents; ++i) {
+        Agent agent;
+        agent.loadFromStream(file);
+        agents.push_back(agent);
+    }
+    
+    file.close();
+    printf("Simulation state loaded from %s\n", fullPath.c_str());
+    return true;
 }
 

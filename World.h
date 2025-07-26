@@ -39,6 +39,7 @@ public:
     void addRandomBots(int num);
     void addCarnivore();
     void addHerbivore();
+    void addRandomAgents(int num);
     
     void positionOfInterest(int type, float &xi, float &yi);
     

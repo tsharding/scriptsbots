@@ -60,6 +60,12 @@ void World::update()
         modcounter=0;
         current_epoch++;
         
+        // Spawn random agents at specified epoch intervals
+        if (current_epoch % conf::RANDOM_SPAWN_EPOCH_INTERVAL == 0) {
+            printf("Epoch %d: Spawning %d random agents\n", current_epoch, conf::RANDOM_SPAWN_COUNT);
+            addRandomAgents(conf::RANDOM_SPAWN_COUNT);
+        }
+        
         // Population recovery: if carnivores or herbivores are at 0, spawn 25 random agents of that type
         std::pair<int,int> num_herbs_carns = numHerbCarnivores();
         
@@ -551,6 +557,18 @@ void World::addHerbivore()
     idcounter++;
     a.herbivore= randf(0.9, 1);
     agents.push_back(a);
+}
+
+void World::addRandomAgents(int num)
+{
+    for (int i = 0; i < num; i++) {
+        Agent a;
+        a.id = idcounter;
+        idcounter++;
+        // Random herbivore value between 0 and 1 (0 = carnivore, 1 = herbivore)
+        a.herbivore = randf(0, 1);
+        agents.push_back(a);
+    }
 }
 
 

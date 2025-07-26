@@ -87,6 +87,9 @@ public:
     //will store the mutations that this agent has from its parent
     //can be used to tune the mutation rate
     std::vector<std::string> mutations;
+    
+    // Lineage tracking
+    std::string lineageTag; // 5-character alpha tag for lineage tracking
 };
 
 #endif // AGENT_H

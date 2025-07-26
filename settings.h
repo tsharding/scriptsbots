@@ -45,6 +45,9 @@ namespace conf {
     const float REPMULT = 5; //when a body of dead animal is distributed, how much of it goes toward increasing birth counter for surrounding bots?
     
     const int AUTOSAVE_FREQUENCY = 100; //how often (in epochs) to auto-save the simulation state
+    
+    const int RANDOM_SPAWN_EPOCH_INTERVAL = 5; //how often (in epochs) to spawn random agents
+    const int RANDOM_SPAWN_COUNT = 5; //number of random agents to spawn each time
 }
 
 #endif

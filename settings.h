@@ -9,8 +9,8 @@
 
 namespace conf {
     
-    const int WIDTH = 8000;  //width and height of simulation
-    const int HEIGHT = 5000;
+    const int WIDTH = 9000;  //width and height of simulation
+    const int HEIGHT = 6000;
     const int WWIDTH = 1600;  //window width and height
     const int WHEIGHT = 900;
     
@@ -32,8 +32,8 @@ namespace conf {
 
     const float FOODINTAKE= 0.002; //how much does every agent consume?
     const float FOODWASTE= 0.001; //how much food disapears if agent eats?
-    const float FOODMAX= 0.9; //how much food per cell can there be at max?
-    const int FOODADDFREQ= 5; //how often does random square get to full food?
+    const float FOODMAX= 1.5; //how much food per cell can there be at max?
+    const int FOODADDFREQ= 50; //how often does random square get to full food?
 
     const float FOODTRANSFER= 0.001; //how much is transfered between two agents trading food? per iteration
     const float FOOD_SHARING_DISTANCE= 50; //how far away is food shared between bots?

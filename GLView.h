@@ -44,6 +44,7 @@ private:
     bool draw;
     int skipdraw;
     bool drawfood;
+    bool showAgentInfo;
     char buf[100];
     char buf2[10];
     int modcounter;

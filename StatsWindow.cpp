@@ -236,6 +236,10 @@ void StatsWindow::drawControlsInfo()
     RenderString(20, yPos, GLUT_BITMAP_HELVETICA_12, buf, 0.0f, 0.0f, 0.0f);
     yPos += 15;
     
+    sprintf(buf, "g - Toggle agent info (text & health bars)");
+    RenderString(20, yPos, GLUT_BITMAP_HELVETICA_12, buf, 0.0f, 0.0f, 0.0f);
+    yPos += 15;
+    
     sprintf(buf, "+/- - Speed control");
     RenderString(20, yPos, GLUT_BITMAP_HELVETICA_12, buf, 0.0f, 0.0f, 0.0f);
     yPos += 15;

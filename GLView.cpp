@@ -63,6 +63,7 @@ GLView::GLView(World *s) :
         draw(true),
         skipdraw(1),
         drawfood(true),
+        showAgentInfo(true),
         modcounter(0),
         frames(0),
         lastUpdate(0)
@@ -192,6 +193,8 @@ void GLView::processNormalKeys(unsigned char key, int x, int y)
         skipdraw--;
     } else if (key=='f') {
         drawfood=!drawfood;
+    } else if (key=='g') {
+        showAgentInfo=!showAgentInfo;
     } else if (key=='a') {
         for (int i=0;i<10;i++){world->addNewByCrossover();}
     } else if (key=='q') {
@@ -451,78 +454,82 @@ void GLView::drawAgent(const Agent& agent)
     glVertex3f(agent.pos.x+(3*r*agent.spikeLength)*cos(agent.angle),agent.pos.y+(3*r*agent.spikeLength)*sin(agent.angle),0);
     glEnd();
 
-    //and health
-    int xo=18;
-    int yo=-15;
-    glBegin(GL_QUADS);
-    //black background
-    glColor3f(0,0,0);
-    glVertex3f(agent.pos.x+xo,agent.pos.y+yo,0);
-    glVertex3f(agent.pos.x+xo+5,agent.pos.y+yo,0);
-    glVertex3f(agent.pos.x+xo+5,agent.pos.y+yo+40,0);
-    glVertex3f(agent.pos.x+xo,agent.pos.y+yo+40,0);
+    //and health bars (only if showAgentInfo is enabled)
+    if (showAgentInfo) {
+        int xo=18;
+        int yo=-15;
+        glBegin(GL_QUADS);
+        //black background
+        glColor3f(0,0,0);
+        glVertex3f(agent.pos.x+xo,agent.pos.y+yo,0);
+        glVertex3f(agent.pos.x+xo+5,agent.pos.y+yo,0);
+        glVertex3f(agent.pos.x+xo+5,agent.pos.y+yo+40,0);
+        glVertex3f(agent.pos.x+xo,agent.pos.y+yo+40,0);
 
-    //health
-    glColor3f(0,0.8,0);
-    glVertex3f(agent.pos.x+xo,agent.pos.y+yo+20*(2-agent.health),0);
-    glVertex3f(agent.pos.x+xo+5,agent.pos.y+yo+20*(2-agent.health),0);
-    glVertex3f(agent.pos.x+xo+5,agent.pos.y+yo+40,0);
-    glVertex3f(agent.pos.x+xo,agent.pos.y+yo+40,0);
+        //health
+        glColor3f(0,0.8,0);
+        glVertex3f(agent.pos.x+xo,agent.pos.y+yo+20*(2-agent.health),0);
+        glVertex3f(agent.pos.x+xo+5,agent.pos.y+yo+20*(2-agent.health),0);
+        glVertex3f(agent.pos.x+xo+5,agent.pos.y+yo+40,0);
+        glVertex3f(agent.pos.x+xo,agent.pos.y+yo+40,0);
 
-    //if this is a hybrid, we want to put a marker down
-    if (agent.hybrid) {
-        glColor3f(0,0,0.8);
-        glVertex3f(agent.pos.x+xo+6,agent.pos.y+yo,0);
-        glVertex3f(agent.pos.x+xo+12,agent.pos.y+yo,0);
-        glVertex3f(agent.pos.x+xo+12,agent.pos.y+yo+10,0);
-        glVertex3f(agent.pos.x+xo+6,agent.pos.y+yo+10,0);
+        //if this is a hybrid, we want to put a marker down
+        if (agent.hybrid) {
+            glColor3f(0,0,0.8);
+            glVertex3f(agent.pos.x+xo+6,agent.pos.y+yo,0);
+            glVertex3f(agent.pos.x+xo+12,agent.pos.y+yo,0);
+            glVertex3f(agent.pos.x+xo+12,agent.pos.y+yo+10,0);
+            glVertex3f(agent.pos.x+xo+6,agent.pos.y+yo+10,0);
+        }
+
+        glColor3f(1-agent.herbivore,agent.herbivore,0);
+        glVertex3f(agent.pos.x+xo+6,agent.pos.y+yo+12,0);
+        glVertex3f(agent.pos.x+xo+12,agent.pos.y+yo+12,0);
+        glVertex3f(agent.pos.x+xo+12,agent.pos.y+yo+22,0);
+        glVertex3f(agent.pos.x+xo+6,agent.pos.y+yo+22,0);
+
+        //how much sound is this bot making?
+        glColor3f(agent.soundmul,agent.soundmul,agent.soundmul);
+        glVertex3f(agent.pos.x+xo+6,agent.pos.y+yo+24,0);
+        glVertex3f(agent.pos.x+xo+12,agent.pos.y+yo+24,0);
+        glVertex3f(agent.pos.x+xo+12,agent.pos.y+yo+34,0);
+        glVertex3f(agent.pos.x+xo+6,agent.pos.y+yo+34,0);
+
+        //draw giving/receiving
+        if (agent.dfood!=0) {
+
+            float mag=cap(abs(agent.dfood)/conf::FOODTRANSFER/3);
+            if (agent.dfood>0) glColor3f(0,mag,0); //draw boost as green outline
+            else glColor3f(mag,0,0);
+            glVertex3f(agent.pos.x+xo+6,agent.pos.y+yo+36,0);
+            glVertex3f(agent.pos.x+xo+12,agent.pos.y+yo+36,0);
+            glVertex3f(agent.pos.x+xo+12,agent.pos.y+yo+46,0);
+            glVertex3f(agent.pos.x+xo+6,agent.pos.y+yo+46,0);
+        }
+
+
+        glEnd();
     }
 
-    glColor3f(1-agent.herbivore,agent.herbivore,0);
-    glVertex3f(agent.pos.x+xo+6,agent.pos.y+yo+12,0);
-    glVertex3f(agent.pos.x+xo+12,agent.pos.y+yo+12,0);
-    glVertex3f(agent.pos.x+xo+12,agent.pos.y+yo+22,0);
-    glVertex3f(agent.pos.x+xo+6,agent.pos.y+yo+22,0);
+    //print stats (only if showAgentInfo is enabled)
+    if (showAgentInfo) {
+        //generation count
+        sprintf(buf2, "%i", agent.gencount);
+        RenderString(agent.pos.x-conf::BOTRADIUS*1.5, agent.pos.y+conf::BOTRADIUS*1.8, GLUT_BITMAP_TIMES_ROMAN_24, buf2, 0.0f, 0.0f, 0.0f);
+        //age
+        sprintf(buf2, "%i", agent.age);
+        float x = agent.age/1000.0;
+        if(x>1)x=1;
+        RenderString(agent.pos.x-conf::BOTRADIUS*1.5, agent.pos.y+conf::BOTRADIUS*1.8+12, GLUT_BITMAP_TIMES_ROMAN_24, buf2, x, 0.0f, 0.0f);
 
-    //how much sound is this bot making?
-    glColor3f(agent.soundmul,agent.soundmul,agent.soundmul);
-    glVertex3f(agent.pos.x+xo+6,agent.pos.y+yo+24,0);
-    glVertex3f(agent.pos.x+xo+12,agent.pos.y+yo+24,0);
-    glVertex3f(agent.pos.x+xo+12,agent.pos.y+yo+34,0);
-    glVertex3f(agent.pos.x+xo+6,agent.pos.y+yo+34,0);
+        //health
+        sprintf(buf2, "%.2f", agent.health);
+        RenderString(agent.pos.x-conf::BOTRADIUS*1.5, agent.pos.y+conf::BOTRADIUS*1.8+24, GLUT_BITMAP_TIMES_ROMAN_24, buf2, 0.0f, 0.0f, 0.0f);
 
-    //draw giving/receiving
-    if (agent.dfood!=0) {
-
-        float mag=cap(abs(agent.dfood)/conf::FOODTRANSFER/3);
-        if (agent.dfood>0) glColor3f(0,mag,0); //draw boost as green outline
-        else glColor3f(mag,0,0);
-        glVertex3f(agent.pos.x+xo+6,agent.pos.y+yo+36,0);
-        glVertex3f(agent.pos.x+xo+12,agent.pos.y+yo+36,0);
-        glVertex3f(agent.pos.x+xo+12,agent.pos.y+yo+46,0);
-        glVertex3f(agent.pos.x+xo+6,agent.pos.y+yo+46,0);
+        //repcounter
+        sprintf(buf2, "%.2f", agent.repcounter);
+        RenderString(agent.pos.x-conf::BOTRADIUS*1.5, agent.pos.y+conf::BOTRADIUS*1.8+36, GLUT_BITMAP_TIMES_ROMAN_24, buf2, 0.0f, 0.0f, 0.0f);
     }
-
-
-    glEnd();
-
-    //print stats
-    //generation count
-    sprintf(buf2, "%i", agent.gencount);
-    RenderString(agent.pos.x-conf::BOTRADIUS*1.5, agent.pos.y+conf::BOTRADIUS*1.8, GLUT_BITMAP_TIMES_ROMAN_24, buf2, 0.0f, 0.0f, 0.0f);
-    //age
-    sprintf(buf2, "%i", agent.age);
-    float x = agent.age/1000.0;
-    if(x>1)x=1;
-    RenderString(agent.pos.x-conf::BOTRADIUS*1.5, agent.pos.y+conf::BOTRADIUS*1.8+12, GLUT_BITMAP_TIMES_ROMAN_24, buf2, x, 0.0f, 0.0f);
-
-    //health
-    sprintf(buf2, "%.2f", agent.health);
-    RenderString(agent.pos.x-conf::BOTRADIUS*1.5, agent.pos.y+conf::BOTRADIUS*1.8+24, GLUT_BITMAP_TIMES_ROMAN_24, buf2, 0.0f, 0.0f, 0.0f);
-
-    //repcounter
-    sprintf(buf2, "%.2f", agent.repcounter);
-    RenderString(agent.pos.x-conf::BOTRADIUS*1.5, agent.pos.y+conf::BOTRADIUS*1.8+36, GLUT_BITMAP_TIMES_ROMAN_24, buf2, 0.0f, 0.0f, 0.0f);
 }
 
 void GLView::drawMisc()

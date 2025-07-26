@@ -12,7 +12,7 @@ extern StatsWindow* STATSWINDOW;
 int StatsWindow::statsWindowId = -1;
 StatsWindow* StatsWindow::instance = nullptr;
 
-StatsWindow::StatsWindow(World* w) : world(w)
+StatsWindow::StatsWindow(World* w) : world(w), currentMaxScale(10.0f)
 {
     instance = this;
 }
@@ -133,21 +133,36 @@ void StatsWindow::drawPopulationChart()
     glEnd();
     
     // Draw population lines
-    float mm = 2.0f;
     float chartWidth = windowWidth - 60;
     float chartHeight = 160;
-    float maxPop = 100; // Scale factor
+    
+    // Calculate current maximum in the displayed range
+    float maxPop = 1.0f; // Minimum scale to avoid division by zero
+    for(int q = 0; q < world->numHerbivore.size(); q++) {
+        if(world->numHerbivore[q] > maxPop) maxPop = world->numHerbivore[q];
+        if(world->numCarnivore[q] > maxPop) maxPop = world->numCarnivore[q];
+    }
+    // Add some padding to the scale
+    maxPop = maxPop * 1.1f;
+    if(maxPop < 10.0f) maxPop = 10.0f; // Minimum scale for visibility
+    
+    // Update the scale to fit the current data range
+    // If the new maximum exceeds the current scale, increase it
+    // If the new maximum is below the current scale, decrease it
+    currentMaxScale = maxPop;
+    
+    // Use the current scale (which now adapts both up and down)
+    maxPop = currentMaxScale;
     
     glBegin(GL_LINES);
     
     // Herbivore line (green)
     glColor3f(0, 1, 0);
     for(int q = 0; q < world->numHerbivore.size() - 1; q++) {
-        if(q == world->ptr - 1) continue;
         float x1 = 30 + (q * chartWidth) / world->numHerbivore.size();
-        float y1 = 180 - (mm * world->numHerbivore[q] * chartHeight) / maxPop;
+        float y1 = 180 - (world->numHerbivore[q] * chartHeight) / maxPop;
         float x2 = 30 + ((q + 1) * chartWidth) / world->numHerbivore.size();
-        float y2 = 180 - (mm * world->numHerbivore[q + 1] * chartHeight) / maxPop;
+        float y2 = 180 - (world->numHerbivore[q + 1] * chartHeight) / maxPop;
         glVertex2f(x1, y1);
         glVertex2f(x2, y2);
     }
@@ -155,18 +170,17 @@ void StatsWindow::drawPopulationChart()
     // Carnivore line (red)
     glColor3f(1, 0, 0);
     for(int q = 0; q < world->numCarnivore.size() - 1; q++) {
-        if(q == world->ptr - 1) continue;
         float x1 = 30 + (q * chartWidth) / world->numCarnivore.size();
-        float y1 = 180 - (mm * world->numCarnivore[q] * chartHeight) / maxPop;
+        float y1 = 180 - (world->numCarnivore[q] * chartHeight) / maxPop;
         float x2 = 30 + ((q + 1) * chartWidth) / world->numCarnivore.size();
-        float y2 = 180 - (mm * world->numCarnivore[q + 1] * chartHeight) / maxPop;
+        float y2 = 180 - (world->numCarnivore[q + 1] * chartHeight) / maxPop;
         glVertex2f(x1, y1);
         glVertex2f(x2, y2);
     }
     
-    // Current time indicator (black line)
+    // Current time indicator (black line) - now always at the right edge
     glColor3f(0, 0, 0);
-    float currentX = 30 + (world->ptr * chartWidth) / world->numHerbivore.size();
+    float currentX = 30 + chartWidth;
     glVertex2f(currentX, 20);
     glVertex2f(currentX, 200);
     
@@ -176,6 +190,23 @@ void StatsWindow::drawPopulationChart()
     char buf[256];
     sprintf(buf, "Population Chart (Green=Herbivores, Red=Carnivores)");
     RenderString(30, 15, GLUT_BITMAP_HELVETICA_12, buf, 0.0f, 0.0f, 0.0f);
+    
+    // Draw Y-axis labels
+    sprintf(buf, "Max: %.0f", maxPop);
+    RenderString(5, 25, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
+    
+    // Draw intermediate Y-axis labels
+    sprintf(buf, "%.0f", maxPop * 0.75f);
+    RenderString(5, 60, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
+    
+    sprintf(buf, "%.0f", maxPop * 0.5f);
+    RenderString(5, 100, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
+    
+    sprintf(buf, "%.0f", maxPop * 0.25f);
+    RenderString(5, 140, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
+    
+    sprintf(buf, "0");
+    RenderString(5, 180, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
 }
 
 void StatsWindow::drawStatsInfo()

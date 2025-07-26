@@ -32,6 +32,7 @@ private:
     World* world;
     static int statsWindowId;
     static StatsWindow* instance;
+    float currentMaxScale; // Track the current maximum scale
     
     void drawPopulationChart();
     void drawControlsInfo();

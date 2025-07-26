@@ -41,8 +41,7 @@ public:
     void positionOfInterest(int type, float &xi, float &yi);
     
     std::vector<int> numCarnivore;
-    std::vector<int> numHerbivore; 
-    int ptr;
+    std::vector<int> numHerbivore;
     
 private:
     void setInputs();

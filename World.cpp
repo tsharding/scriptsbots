@@ -28,7 +28,6 @@ World::World() :
     
     numCarnivore.resize(200, 0);
     numHerbivore.resize(200, 0);
-    ptr=0;
 }
 
 void World::update()
@@ -45,10 +44,16 @@ void World::update()
     
     if(modcounter%1000==0){
         std::pair<int,int> num_herbs_carns = numHerbCarnivores();
-        numHerbivore[ptr]= num_herbs_carns.first;
-        numCarnivore[ptr]= num_herbs_carns.second;
-        ptr++;
-        if(ptr == numHerbivore.size()) ptr = 0;
+        
+        // Shift all data left by one position
+        for(int i = 0; i < numHerbivore.size() - 1; i++) {
+            numHerbivore[i] = numHerbivore[i + 1];
+            numCarnivore[i] = numCarnivore[i + 1];
+        }
+        
+        // Add new data at the rightmost position (end of array)
+        numHerbivore[numHerbivore.size() - 1] = num_herbs_carns.first;
+        numCarnivore[numCarnivore.size() - 1] = num_herbs_carns.second;
     }
     if (modcounter%1000==0) writeReport();
     if (modcounter>=10000) {

@@ -1,4 +1,5 @@
 #include "GLView.h"
+#include "StatsWindow.h"
 
 #include "config.h"
 #ifdef LOCAL_GLUT32
@@ -31,7 +32,10 @@ void gl_processMouseActiveMotion(int x, int y)
 }
 void gl_renderScene()
 {
-    GLVIEW->renderScene();
+    // Only render if this is the main window
+    if (glutGetWindow() == 1) {
+        GLVIEW->renderScene();
+    }
 }
 
 
@@ -124,6 +128,8 @@ void GLView::processMouseActiveMotion(int x, int y)
 
 void GLView::processNormalKeys(unsigned char key, int x, int y)
 {
+    // Process keys regardless of which window has focus
+    // (this allows stats window to forward keys to main window)
 
     if (key == 27)
         exit(0);
@@ -167,6 +173,7 @@ void GLView::processNormalKeys(unsigned char key, int x, int y)
 
 void GLView::handleIdle()
 {
+    // Always update the world simulation regardless of window focus
     modcounter++;
     if (!paused) world->update();
 
@@ -175,10 +182,15 @@ void GLView::handleIdle()
     frames++;
     if ((currentTime - lastUpdate) >= 1000) {
         std::pair<int,int> num_herbs_carns = world->numHerbCarnivores();
-        sprintf( buf, "FPS: %d NumAgents: %d Carnivors: %d Herbivors: %d Epoch: %d", frames, world->numAgents(), num_herbs_carns.second, num_herbs_carns.first, world->epoch() );
+        sprintf( buf, "ScriptBots - World View (FPS: %d)", frames );
         glutSetWindowTitle( buf );
         frames = 0;
         lastUpdate = currentTime;
+        
+        // Update stats window only when FPS updates (once per second)
+        if (STATSWINDOW) {
+            STATSWINDOW->updateDisplay();
+        }
     }
     if (skipdraw<=0 && draw) {
         clock_t endwait;
@@ -187,13 +199,13 @@ void GLView::handleIdle()
         while (clock() < endwait) {}
     }
 
-    if (draw) {
+    // Only render if this is the main window
+    if (glutGetWindow() == 1 && draw) {
         if (skipdraw>0) {
             if (modcounter%skipdraw==0) renderScene();    //increase fps by skipping drawing
         }
         else renderScene(); //we will decrease fps by waiting using clocks
     }
-
 }
 
 void GLView::renderScene()
@@ -469,28 +481,8 @@ void GLView::drawAgent(const Agent& agent)
 
 void GLView::drawMisc()
 {
-    float mm = 3;
-    //draw misc info
-    glBegin(GL_LINES);
-    glColor3f(0,1,0);
-    for(int q=0;q<world->numHerbivore.size()-1;q++) {
-        if(q==world->ptr-1) continue;
-        glVertex3f(q*10,-20 -mm*world->numHerbivore[q],0);
-        glVertex3f((q+1)*10,-20 -mm*world->numHerbivore[q+1],0);
-    }
-    glColor3f(1,0,0);
-    for(int q=0;q<world->numHerbivore.size()-1;q++) {
-        if(q==world->ptr-1) continue;
-        glVertex3f(q*10,-20 -mm*world->numCarnivore[q],0);
-        glVertex3f((q+1)*10,-20 -mm*world->numCarnivore[q+1],0);
-    }
-    glColor3f(0,0,0);
-    glVertex3f(world->ptr*10,-20,0);
-    glVertex3f(world->ptr*10,-mm*100,0);
-    glEnd();
-    
-    RenderString(2500, -80, GLUT_BITMAP_TIMES_ROMAN_24, "Press d for extra speed", 0.0f, 0.0f, 0.0f);
-    RenderString(2500, -20, GLUT_BITMAP_TIMES_ROMAN_24, "Press s to follow selected agent, o to follow oldest", 0.0f, 0.0f, 0.0f);
+    // Population chart and controls info moved to separate stats window
+    // This function is now empty to keep the interface clean
 }
 
 void GLView::drawFood(int x, int y, float quantity)

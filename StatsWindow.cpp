@@ -48,7 +48,8 @@ void StatsWindow::createWindow()
     
     glutDisplayFunc(gl_renderStatsScene);
     glutReshapeFunc(gl_changeStatsSize);
-    // Don't set keyboard or mouse functions - let main window handle all input
+    glutKeyboardFunc(gl_processStatsKeys);
+    // Don't set mouse functions - stats window should not handle mouse events
 }
 
 void StatsWindow::gl_renderStatsScene()
@@ -89,6 +90,7 @@ void StatsWindow::processKeys(unsigned char key, int x, int y)
     // This prevents interference with main window rendering
     if (GLVIEW) {
         // Call the main window's key handler directly without window switching
+        // The main window's key handler now works regardless of window focus
         GLVIEW->processNormalKeys(key, x, y);
     }
 }

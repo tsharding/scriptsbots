@@ -60,6 +60,9 @@ Agent::Agent()
         eyefov[i] = randf(0.5, 2);
         eyedir[i] = randf(0, 2*M_PI);
     }
+    
+    // Assign a random lineage tag to new agents
+    lineageTag = generateLineageTag();
 }
 
 void Agent::printSelf()
@@ -143,6 +146,9 @@ Agent Agent::reproduce(float MR, float MR2)
     a2.brain= this->brain;
     a2.brain.mutate(MR,MR2);
     
+    // Inherit lineage tag from parent
+    a2.lineageTag = this->lineageTag;
+    
     return a2;
 
 }
@@ -172,6 +178,9 @@ Agent Agent::crossover(const Agent& other)
     
     anew.eyefov= randf(0,1)<0.5 ? this->eyefov : other.eyefov;
     anew.eyedir= randf(0,1)<0.5 ? this->eyedir : other.eyedir;
+    
+    // Inherit lineage tag from one of the parents
+    anew.lineageTag = randf(0,1)<0.5 ? this->lineageTag : other.lineageTag;
     
     anew.brain= this->brain.crossover(other.brain);
     
@@ -245,6 +254,11 @@ void Agent::saveToStream(std::ofstream& file) const
         file.write(reinterpret_cast<const char*>(&strSize), sizeof(strSize));
         file.write(mutation.c_str(), strSize);
     }
+    
+    // Save lineage tag
+    size_t tagSize = lineageTag.size();
+    file.write(reinterpret_cast<const char*>(&tagSize), sizeof(tagSize));
+    file.write(lineageTag.c_str(), tagSize);
 }
 
 void Agent::loadFromStream(std::ifstream& file)
@@ -320,5 +334,24 @@ void Agent::loadFromStream(std::ifstream& file)
         std::string mutation(strSize, '\0');
         file.read(&mutation[0], strSize);
         mutations.push_back(mutation);
+    }
+    
+    // Load lineage tag (handle old save files that don't have this field)
+    if (file.peek() == EOF) {
+        lineageTag = generateLineageTag();
+        return;
+    }
+    size_t tagSize = 0;
+    file.read(reinterpret_cast<char*>(&tagSize), sizeof(tagSize));
+    if (file && tagSize > 0 && tagSize <= 16) {
+        std::vector<char> tagBuf(tagSize);
+        file.read(tagBuf.data(), tagSize);
+        if (file) {
+            lineageTag.assign(tagBuf.begin(), tagBuf.end());
+        } else {
+            lineageTag = generateLineageTag();
+        }
+    } else {
+        lineageTag = generateLineageTag();
     }
 }

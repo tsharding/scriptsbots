@@ -609,6 +609,9 @@ void GLView::drawAgent(const Agent& agent)
         //repcounter
         sprintf(buf2, "%.2f", agent.repcounter);
         RenderString(agent.pos.x-conf::BOTRADIUS*1.5, agent.pos.y+conf::BOTRADIUS*1.8+36, GLUT_BITMAP_TIMES_ROMAN_24, buf2, 0.0f, 0.0f, 0.0f);
+        
+        //lineage tag
+        RenderString(agent.pos.x-conf::BOTRADIUS*1.5, agent.pos.y+conf::BOTRADIUS*1.8+48, GLUT_BITMAP_TIMES_ROMAN_24, agent.lineageTag.c_str(), 0.0f, 0.0f, 0.0f);
     }
 }
 

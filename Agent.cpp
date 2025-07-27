@@ -10,7 +10,7 @@
 using namespace std;
 Agent::Agent()
 {
-    pos= Vector2f(randf(0,conf::WIDTH),randf(0,conf::HEIGHT));
+    pos= Vector2f(randf(0,conf::WIDTH()),randf(0,conf::HEIGHT()));
     angle= randf(-M_PI,M_PI);
     health= 1.0+randf(0,0.1);
     age=0;
@@ -33,7 +33,7 @@ Agent::Agent()
     ib=0;
     hybrid= false;
     herbivore= randf(0,1);
-    repcounter= herbivore*randf(conf::REPRATEH-0.1,conf::REPRATEH+0.1) + (1-herbivore)*randf(conf::REPRATEC-0.1,conf::REPRATEC+0.1);
+    repcounter= herbivore*randf(conf::REPRATEH()-0.1,conf::REPRATEH()+0.1) + (1-herbivore)*randf(conf::REPRATEC()-0.1,conf::REPRATEC()+0.1);
 
     id=0;
     
@@ -48,12 +48,12 @@ Agent::Agent()
 
     spiked= false;
     
-    in.resize(INPUTSIZE, 0);
-    out.resize(OUTPUTSIZE, 0);
+    in.resize(conf::INPUTSIZE(), 0);
+    out.resize(conf::OUTPUTSIZE(), 0);
     
-    eyefov.resize(NUMEYES, 0);
-    eyedir.resize(NUMEYES, 0);
-    for(int i=0;i<NUMEYES;i++) {
+    eyefov.resize(conf::NUMEYES(), 0);
+    eyedir.resize(conf::NUMEYES(), 0);
+    for(int i=0;i<conf::NUMEYES();i++) {
         eyefov[i] = randf(0.5, 2);
         eyedir[i] = randf(0, 2*M_PI);
     }
@@ -90,22 +90,22 @@ Agent Agent::reproduce(float MR, float MR2)
 
     //spawn the baby somewhere closeby behind agent
     //we want to spawn behind so that agents dont accidentally eat their young right away
-    Vector2f fb(conf::BOTRADIUS,0);
+            Vector2f fb(conf::BOTRADIUS(),0);
     fb.rotate(-a2.angle);
-    a2.pos= this->pos + fb + Vector2f(randf(-conf::BOTRADIUS*2,conf::BOTRADIUS*2), randf(-conf::BOTRADIUS*2,conf::BOTRADIUS*2));
-    if (a2.pos.x<0) a2.pos.x= conf::WIDTH+a2.pos.x;
-    if (a2.pos.x>=conf::WIDTH) a2.pos.x= a2.pos.x-conf::WIDTH;
-    if (a2.pos.y<0) a2.pos.y= conf::HEIGHT+a2.pos.y;
-    if (a2.pos.y>=conf::HEIGHT) a2.pos.y= a2.pos.y-conf::HEIGHT;
+            a2.pos= this->pos + fb + Vector2f(randf(-conf::BOTRADIUS()*2,conf::BOTRADIUS()*2), randf(-conf::BOTRADIUS()*2,conf::BOTRADIUS()*2));
+            if (a2.pos.x<0) a2.pos.x= conf::WIDTH()+a2.pos.x;
+        if (a2.pos.x>=conf::WIDTH()) a2.pos.x= a2.pos.x-conf::WIDTH();
+        if (a2.pos.y<0) a2.pos.y= conf::HEIGHT()+a2.pos.y;
+        if (a2.pos.y>=conf::HEIGHT()) a2.pos.y= a2.pos.y-conf::HEIGHT();
 
     a2.gencount= this->gencount+1;
-    a2.repcounter= a2.herbivore*randf(conf::REPRATEH-0.1,conf::REPRATEH+0.1) + (1-a2.herbivore)*randf(conf::REPRATEC-0.1,conf::REPRATEC+0.1);
+            a2.repcounter= a2.herbivore*randf(conf::REPRATEH()-0.1,conf::REPRATEH()+0.1) + (1-a2.herbivore)*randf(conf::REPRATEC()-0.1,conf::REPRATEC()+0.1);
 
     //noisy attribute passing
     a2.MUTRATE1= this->MUTRATE1;
     a2.MUTRATE2= this->MUTRATE2;
-    if (randf(0,1)<0.1) a2.MUTRATE1= randn(this->MUTRATE1, conf::METAMUTRATE1);
-    if (randf(0,1)<0.1) a2.MUTRATE2= randn(this->MUTRATE2, conf::METAMUTRATE2);
+            if (randf(0,1)<0.1) a2.MUTRATE1= randn(this->MUTRATE1, conf::METAMUTRATE1());
+        if (randf(0,1)<0.1) a2.MUTRATE2= randn(this->MUTRATE2, conf::METAMUTRATE2());
     if (this->MUTRATE1<0.001) this->MUTRATE1= 0.001;
     if (this->MUTRATE2<0.02) this->MUTRATE2= 0.02;
     a2.herbivore= cap(randn(this->herbivore, 0.03));
@@ -127,7 +127,7 @@ Agent Agent::reproduce(float MR, float MR2)
     
     a2.eyefov = this->eyefov;
     a2.eyedir = this->eyedir;
-    for(int i=0;i<NUMEYES;i++){
+    for(int i=0;i<conf::NUMEYES();i++){
         if(randf(0,1)<MR*5) a2.eyefov[i] = randn(a2.eyefov[i], MR2);
         if(a2.eyefov[i]<0) a2.eyefov[i] = 0;
         

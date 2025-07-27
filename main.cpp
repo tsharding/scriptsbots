@@ -1,6 +1,7 @@
 #include "GLView.h"
 #include "StatsWindow.h"
 #include "World.h"
+#include "Config.h"
 
 #include <GL/glut.h>
 
@@ -12,7 +13,15 @@ StatsWindow* STATSWINDOW = nullptr;
 
 int main(int argc, char **argv) {
     srand(time(0));
-    if (conf::WIDTH%conf::CZ!=0 || conf::HEIGHT%conf::CZ!=0) printf("CAREFUL! The cell size variable conf::CZ should divide evenly into  both conf::WIDTH and conf::HEIGHT! It doesn't right now!");
+    
+    // Load configuration
+    if (!g_config.load()) {
+        printf("Warning: Could not load configuration file. Using default values.\n");
+        // Cache default values even if file loading failed
+        g_config.cacheValues();
+    }
+    
+    if (conf::WIDTH()%conf::CZ()!=0 || conf::HEIGHT()%conf::CZ()!=0) printf("CAREFUL! The cell size variable conf::CZ should divide evenly into both conf::WIDTH and conf::HEIGHT! It doesn't right now!");
     
     printf("ScriptBots now runs in two windows:\n");
     printf("- Main window: World visualization\n");
@@ -63,7 +72,7 @@ int main(int argc, char **argv) {
     
     // Create main world window
     glutInitWindowPosition(30,30);
-    glutInitWindowSize(conf::WWIDTH,conf::WHEIGHT);
+    glutInitWindowSize(conf::WWIDTH(),conf::WHEIGHT());
     int mainWindowId = glutCreateWindow("ScriptBots - World View");
     glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
     glutDisplayFunc(gl_renderScene);

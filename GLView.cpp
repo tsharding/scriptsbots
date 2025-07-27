@@ -67,20 +67,20 @@ GLView::GLView(World *s) :
 {
 
     // Calculate initial zoom to fit world in window
-    float worldAspectRatio = (float)conf::WIDTH / conf::HEIGHT;
-    float windowAspectRatio = (float)conf::WWIDTH / conf::WHEIGHT;
+    float worldAspectRatio = (float)conf::WIDTH() / conf::HEIGHT();
+    float windowAspectRatio = (float)conf::WWIDTH() / conf::WHEIGHT();
     
     if (worldAspectRatio > windowAspectRatio) {
         // World is wider than window - fit to width
-        scalemult = (float)conf::WWIDTH / conf::WIDTH;
+        scalemult = (float)conf::WWIDTH() / conf::WIDTH();
     } else {
         // World is taller than window - fit to height
-        scalemult = (float)conf::WHEIGHT / conf::HEIGHT;
+        scalemult = (float)conf::WHEIGHT() / conf::HEIGHT();
     }
     
     // Center the world in the window
-    xtranslate = -conf::WIDTH / 2.0f;
-    ytranslate = -conf::HEIGHT / 2.0f;
+    xtranslate = -conf::WIDTH() / 2.0f;
+    ytranslate = -conf::HEIGHT() / 2.0f;
     
     downb[0]=0;downb[1]=0;downb[2]=0;
     mousex=0;mousey=0;
@@ -97,7 +97,7 @@ void GLView::changeSize(int w, int h)
     // Reset the coordinate system before modifying
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0,conf::WWIDTH,conf::WHEIGHT,0,0,1);
+    glOrtho(0,conf::WWIDTH(),conf::WHEIGHT(),0,0,1);
 }
 
 void GLView::processMouse(int button, int state, int x, int y)
@@ -122,11 +122,11 @@ void GLView::processMouse(int button, int state, int x, int y)
         if (scalemult > 5.0f) scalemult = 5.0f;
         
         // Adjust translation to zoom towards mouse cursor
-        float mouseXWorld = (x - conf::WWIDTH/2) / oldScale - xtranslate;
-        float mouseYWorld = (y - conf::WHEIGHT/2) / oldScale - ytranslate;
+        float mouseXWorld = (x - conf::WWIDTH()/2) / oldScale - xtranslate;
+        float mouseYWorld = (y - conf::WHEIGHT()/2) / oldScale - ytranslate;
         
-        xtranslate = (x - conf::WWIDTH/2) / scalemult - mouseXWorld;
-        ytranslate = (y - conf::WHEIGHT/2) / scalemult - mouseYWorld;
+        xtranslate = (x - conf::WWIDTH()/2) / scalemult - mouseXWorld;
+        ytranslate = (y - conf::WHEIGHT()/2) / scalemult - mouseYWorld;
         
         mousex = x; mousey = y;
         return;
@@ -134,8 +134,8 @@ void GLView::processMouse(int button, int state, int x, int y)
     
     //have world deal with it. First translate to world coordinates though
     if(button==0){
-        int wx= (int) ((x-conf::WWIDTH/2)/scalemult)-xtranslate;
-        int wy= (int) ((y-conf::WHEIGHT/2)/scalemult)-ytranslate;
+            int wx= (int) ((x-conf::WWIDTH()/2)/scalemult)-xtranslate;
+    int wy= (int) ((y-conf::WHEIGHT()/2)/scalemult)-ytranslate;
         world->processMouse(button, state, wx, wy);
     }
     
@@ -337,7 +337,7 @@ void GLView::renderScene()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glPushMatrix();
 
-    glTranslatef(conf::WWIDTH/2, conf::WHEIGHT/2, 0.0f);    
+    glTranslatef(conf::WWIDTH()/2, conf::WHEIGHT()/2, 0.0f);    
     glScalef(scalemult, scalemult, 1.0f);
     
     if(following==0) {
@@ -364,15 +364,15 @@ void GLView::renderScene()
 void GLView::drawAgent(const Agent& agent)
 {
     float n;
-    float r= conf::BOTRADIUS;
-    float rp= conf::BOTRADIUS+2;
+    float r= conf::BOTRADIUS();
+    float rp= conf::BOTRADIUS()+2;
     //handle selected agent
     if (agent.selectflag>0) {
 
         //draw selection
         glBegin(GL_POLYGON);
         glColor3f(1,1,0);
-        drawCircle(agent.pos.x, agent.pos.y, conf::BOTRADIUS+5);
+        drawCircle(agent.pos.x, agent.pos.y, conf::BOTRADIUS()+5);
         glEnd();
 
         glPushMatrix();
@@ -383,7 +383,7 @@ void GLView::drawAgent(const Agent& agent)
         float xx=15;
         float ss=16;
         glBegin(GL_QUADS);
-        for (int j=0;j<INPUTSIZE;j++) {
+        for (int j=0;j<conf::INPUTSIZE();j++) {
             col= agent.in[j];
             glColor3f(col,col,col);
             glVertex3f(0+ss*j, 0, 0.0f);
@@ -392,7 +392,7 @@ void GLView::drawAgent(const Agent& agent)
             glVertex3f(0+ss*j, yy, 0.0f);
         }
         yy+=5;
-        for (int j=0;j<OUTPUTSIZE;j++) {
+        for (int j=0;j<conf::OUTPUTSIZE();j++) {
             col= agent.out[j];
             glColor3f(col,col,col);
             glVertex3f(0+ss*j, yy, 0.0f);
@@ -407,7 +407,7 @@ void GLView::drawAgent(const Agent& agent)
         float offx=0;
         ss=8;
         xx=ss;
-        for (int j=0;j<BRAINSIZE;j++) {
+        for (int j=0;j<conf::BRAINSIZE();j++) {
             col = agent.brain.boxes[j].out;
             glColor3f(col,col,col);
             
@@ -429,25 +429,25 @@ void GLView::drawAgent(const Agent& agent)
         float offx=0;
         ss=30;
         xx=ss;
-        for (int j=0;j<BRAINSIZE;j++) {
-            for(int k=0;k<CONNS;k++){
+        for (int j=0;j<conf::BRAINSIZE();j++) {
+            for(int k=0;k<conf::CONNS();k++){
                 int j2= agent.brain.boxes[j].id[k];
                 
                 //project indices j and j2 into pixel space
                 float x1= 0;
                 float y1= 0;
-                if(j<INPUTSIZE) { x1= j*ss; y1= yy; }
+                if(j<conf::INPUTSIZE()) { x1= j*ss; y1= yy; }
                 else { 
-                    x1= ((j-INPUTSIZE)%30)*ss;
-                    y1= yy+ss+2*ss*((int) (j-INPUTSIZE)/30);
+                    x1= ((j-conf::INPUTSIZE())%30)*ss;
+                    y1= yy+ss+2*ss*((int) (j-conf::INPUTSIZE())/30);
                 }
                 
                 float x2= 0;
                 float y2= 0;
-                if(j2<INPUTSIZE) { x2= j2*ss; y2= yy; }
+                if(j2<conf::INPUTSIZE()) { x2= j2*ss; y2= yy; }
                 else { 
-                    x2= ((j2-INPUTSIZE)%30)*ss;
-                    y2= yy+ss+2*ss*((int) (j2-INPUTSIZE)/30);
+                    x2= ((j2-conf::INPUTSIZE())%30)*ss;
+                    y2= yy+ss+2*ss*((int) (j2-conf::INPUTSIZE())/30);
                 }
                 
                 float ww= agent.brain.boxes[j].w[k];
@@ -467,7 +467,7 @@ void GLView::drawAgent(const Agent& agent)
     //draw giving/receiving
     if(agent.dfood!=0){
         glBegin(GL_POLYGON);
-        float mag=cap(abs(agent.dfood)/conf::FOODTRANSFER/3);
+        float mag=cap(abs(agent.dfood)/conf::FOODTRANSFER()/3);
         if(agent.dfood>0) glColor3f(0,mag,0); //draw boost as green outline
         else glColor3f(mag,0,0);
         for (int k=0;k<17;k++){
@@ -483,7 +483,7 @@ void GLView::drawAgent(const Agent& agent)
      if (agent.indicator>0) {
          glBegin(GL_POLYGON);
          glColor3f(agent.ir,agent.ig,agent.ib);
-         drawCircle(agent.pos.x, agent.pos.y, conf::BOTRADIUS+((int)agent.indicator));
+         drawCircle(agent.pos.x, agent.pos.y, conf::BOTRADIUS()+((int)agent.indicator));
          glEnd();
      }
     
@@ -491,12 +491,12 @@ void GLView::drawAgent(const Agent& agent)
     //draw eyes
     glBegin(GL_LINES);
     glColor3f(0.5,0.5,0.5);
-    for(int q=0;q<NUMEYES;q++) {
+    for(int q=0;q<conf::NUMEYES();q++) {
         glVertex3f(agent.pos.x,agent.pos.y,0);
 //        float aa= agent.angle+agent.eyedir[q]+agent.eyefov[q];
         float aa= agent.angle+agent.eyedir[q];
-        glVertex3f(agent.pos.x+(conf::BOTRADIUS*4)*cos(aa),
-                   agent.pos.y+(conf::BOTRADIUS*4)*sin(aa),
+        glVertex3f(agent.pos.x+(conf::BOTRADIUS()*4)*cos(aa),
+                   agent.pos.y+(conf::BOTRADIUS()*4)*sin(aa),
                    0);
         //aa = agent.angle+agent.eyedir[q]-agent.eyefov[q];
         //glVertex3f(agent.pos.x,agent.pos.y,0);
@@ -508,7 +508,7 @@ void GLView::drawAgent(const Agent& agent)
     
     glBegin(GL_POLYGON); //body
     glColor3f(agent.red,agent.gre,agent.blu);
-    drawCircle(agent.pos.x, agent.pos.y, conf::BOTRADIUS);
+    drawCircle(agent.pos.x, agent.pos.y, conf::BOTRADIUS());
     glEnd();
 
     glBegin(GL_LINES);
@@ -573,7 +573,7 @@ void GLView::drawAgent(const Agent& agent)
         //draw giving/receiving
         if (agent.dfood!=0) {
 
-            float mag=cap(abs(agent.dfood)/conf::FOODTRANSFER/3);
+            float mag=cap(abs(agent.dfood)/conf::FOODTRANSFER()/3);
             if (agent.dfood>0) glColor3f(0,mag,0); //draw boost as green outline
             else glColor3f(mag,0,0);
             glVertex3f(agent.pos.x+xo+6,agent.pos.y+yo+36,0);
@@ -590,23 +590,23 @@ void GLView::drawAgent(const Agent& agent)
     if (showAgentInfo) {
         //generation count
         sprintf(buf2, "%i", agent.gencount);
-        RenderString(agent.pos.x-conf::BOTRADIUS*1.5, agent.pos.y+conf::BOTRADIUS*1.8, GLUT_BITMAP_TIMES_ROMAN_24, buf2, 0.0f, 0.0f, 0.0f);
+        RenderString(agent.pos.x-conf::BOTRADIUS()*1.5, agent.pos.y+conf::BOTRADIUS()*1.8, GLUT_BITMAP_TIMES_ROMAN_24, buf2, 0.0f, 0.0f, 0.0f);
         //age
         sprintf(buf2, "%i", agent.age);
         float x = agent.age/1000.0;
         if(x>1)x=1;
-        RenderString(agent.pos.x-conf::BOTRADIUS*1.5, agent.pos.y+conf::BOTRADIUS*1.8+12, GLUT_BITMAP_TIMES_ROMAN_24, buf2, x, 0.0f, 0.0f);
+        RenderString(agent.pos.x-conf::BOTRADIUS()*1.5, agent.pos.y+conf::BOTRADIUS()*1.8+12, GLUT_BITMAP_TIMES_ROMAN_24, buf2, x, 0.0f, 0.0f);
 
         //health
         sprintf(buf2, "%.2f", agent.health);
-        RenderString(agent.pos.x-conf::BOTRADIUS*1.5, agent.pos.y+conf::BOTRADIUS*1.8+24, GLUT_BITMAP_TIMES_ROMAN_24, buf2, 0.0f, 0.0f, 0.0f);
+        RenderString(agent.pos.x-conf::BOTRADIUS()*1.5, agent.pos.y+conf::BOTRADIUS()*1.8+24, GLUT_BITMAP_TIMES_ROMAN_24, buf2, 0.0f, 0.0f, 0.0f);
 
         //repcounter
         sprintf(buf2, "%.2f", agent.repcounter);
-        RenderString(agent.pos.x-conf::BOTRADIUS*1.5, agent.pos.y+conf::BOTRADIUS*1.8+36, GLUT_BITMAP_TIMES_ROMAN_24, buf2, 0.0f, 0.0f, 0.0f);
+        RenderString(agent.pos.x-conf::BOTRADIUS()*1.5, agent.pos.y+conf::BOTRADIUS()*1.8+36, GLUT_BITMAP_TIMES_ROMAN_24, buf2, 0.0f, 0.0f, 0.0f);
         
         //lineage tag
-        RenderString(agent.pos.x-conf::BOTRADIUS*1.5, agent.pos.y+conf::BOTRADIUS*1.8+48, GLUT_BITMAP_TIMES_ROMAN_24, agent.lineageTag.c_str(), 0.0f, 0.0f, 0.0f);
+        RenderString(agent.pos.x-conf::BOTRADIUS()*1.5, agent.pos.y+conf::BOTRADIUS()*1.8+48, GLUT_BITMAP_TIMES_ROMAN_24, agent.lineageTag.c_str(), 0.0f, 0.0f, 0.0f);
     }
 }
 
@@ -622,10 +622,10 @@ void GLView::drawFood(int x, int y, float quantity)
     if (drawfood) {
         glBegin(GL_QUADS);
         glColor3f(0.9-quantity,0.9-quantity,1.0-quantity);
-        glVertex3f(x*conf::CZ,y*conf::CZ,0);
-        glVertex3f(x*conf::CZ+conf::CZ,y*conf::CZ,0);
-        glVertex3f(x*conf::CZ+conf::CZ,y*conf::CZ+conf::CZ,0);
-        glVertex3f(x*conf::CZ,y*conf::CZ+conf::CZ,0);
+        glVertex3f(x*conf::CZ(),y*conf::CZ(),0);
+        glVertex3f(x*conf::CZ()+conf::CZ(),y*conf::CZ(),0);
+        glVertex3f(x*conf::CZ()+conf::CZ(),y*conf::CZ()+conf::CZ(),0);
+        glVertex3f(x*conf::CZ(),y*conf::CZ()+conf::CZ(),0);
         glEnd();
     }
 }

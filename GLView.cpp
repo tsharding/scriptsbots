@@ -321,7 +321,7 @@ void GLView::handleIdle()
     frames++;
     if ((currentTime - lastUpdate) >= 1000) {
         std::pair<int,int> num_herbs_carns = world->numHerbCarnivores();
-        sprintf( buf, "ScriptBots - World View (FPS: %d)", frames );
+        sprintf( buf, "ScriptBots - World View %dx%d (FPS: %d)", conf::WIDTH(), conf::HEIGHT(), frames );
         glutSetWindowTitle( buf );
         frames = 0;
         lastUpdate = currentTime;
@@ -610,23 +610,23 @@ void GLView::drawAgent(const Agent& agent)
     if (showAgentInfo) {
         //generation count
         sprintf(buf2, "%i", agent.gencount);
-        RenderString(agent.pos.x-conf::BOTRADIUS()*1.5, agent.pos.y+conf::BOTRADIUS()*1.8, GLUT_BITMAP_TIMES_ROMAN_24, buf2, 0.0f, 0.0f, 0.0f);
+        RenderString(agent.pos.x-conf::BOTRADIUS()*1.5, agent.pos.y+conf::BOTRADIUS()*1.8, GLUT_BITMAP_8_BY_13, buf2, 0.0f, 0.0f, 0.0f);
         //age
         sprintf(buf2, "%i", agent.age);
         float x = agent.age/1000.0;
         if(x>1)x=1;
-        RenderString(agent.pos.x-conf::BOTRADIUS()*1.5, agent.pos.y+conf::BOTRADIUS()*1.8+12, GLUT_BITMAP_TIMES_ROMAN_24, buf2, x, 0.0f, 0.0f);
+        RenderString(agent.pos.x-conf::BOTRADIUS()*1.5, agent.pos.y+conf::BOTRADIUS()*1.8+12, GLUT_BITMAP_8_BY_13, buf2, x, 0.0f, 0.0f);
 
         //health
         sprintf(buf2, "%.2f", agent.health);
-        RenderString(agent.pos.x-conf::BOTRADIUS()*1.5, agent.pos.y+conf::BOTRADIUS()*1.8+24, GLUT_BITMAP_TIMES_ROMAN_24, buf2, 0.0f, 0.0f, 0.0f);
+        RenderString(agent.pos.x-conf::BOTRADIUS()*1.5, agent.pos.y+conf::BOTRADIUS()*1.8+24, GLUT_BITMAP_8_BY_13, buf2, 0.0f, 0.0f, 0.0f);
 
         //repcounter
         sprintf(buf2, "%.2f", agent.repcounter);
-        RenderString(agent.pos.x-conf::BOTRADIUS()*1.5, agent.pos.y+conf::BOTRADIUS()*1.8+36, GLUT_BITMAP_TIMES_ROMAN_24, buf2, 0.0f, 0.0f, 0.0f);
+        RenderString(agent.pos.x-conf::BOTRADIUS()*1.5, agent.pos.y+conf::BOTRADIUS()*1.8+36, GLUT_BITMAP_8_BY_13, buf2, 0.0f, 0.0f, 0.0f);
         
         //lineage tag
-        RenderString(agent.pos.x-conf::BOTRADIUS()*1.5, agent.pos.y+conf::BOTRADIUS()*1.8+48, GLUT_BITMAP_TIMES_ROMAN_24, agent.lineageTag.c_str(), 0.0f, 0.0f, 0.0f);
+        RenderString(agent.pos.x-conf::BOTRADIUS()*1.5, agent.pos.y+conf::BOTRADIUS()*1.8+48, GLUT_BITMAP_8_BY_13, agent.lineageTag.c_str(), 0.0f, 0.0f, 0.0f);
     }
 }
 

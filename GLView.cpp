@@ -42,7 +42,7 @@ void RenderString(float x, float y, void *font, const char* string, float r, flo
     glRasterPos2f(x, y);
     int len = (int) strlen(string);
     for (int i = 0; i < len; i++)
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, string[i]);
+        glutBitmapCharacter(font, string[i]);
 }
 
 void drawCircle(float x, float y, float r) {

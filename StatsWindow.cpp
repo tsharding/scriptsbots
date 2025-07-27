@@ -7,6 +7,16 @@
 // Forward declaration of RenderString function (defined in GLView.cpp)
 void RenderString(float x, float y, void *font, const char* string, float r, float g, float b);
 
+// Helper function to calculate text width for right-justification
+int getTextWidth(const char* string, void* font) {
+    int width = 0;
+    int len = (int) strlen(string);
+    for (int i = 0; i < len; i++) {
+        width += glutBitmapWidth(font, string[i]);
+    }
+    return width;
+}
+
 // Global instance (declared in main.cpp)
 extern StatsWindow* STATSWINDOW;
 int StatsWindow::statsWindowId = -1;
@@ -198,22 +208,28 @@ void StatsWindow::drawPopulationChart()
     sprintf(buf, "Population Chart (Green=Herbivores, Red=Carnivores)");
     RenderString(30, 15, GLUT_BITMAP_HELVETICA_12, buf, 0.0f, 0.0f, 0.0f);
     
-    // Draw Y-axis labels
+    // Draw Y-axis labels - simple positioning with gap from plot edge
+    const int labelX = 25; // Fixed X position for all labels
+    
+    // Max label - positioned to avoid being cut off at top
     sprintf(buf, "Max: %.0f", maxPop);
-    RenderString(5, 25, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
+    RenderString(labelX, 35, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
     
-    // Draw intermediate Y-axis labels
+    // 75% label
     sprintf(buf, "%.0f", maxPop * 0.75f);
-    RenderString(5, 60, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
+    RenderString(labelX, 70, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
     
+    // 50% label
     sprintf(buf, "%.0f", maxPop * 0.5f);
-    RenderString(5, 100, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
+    RenderString(labelX, 110, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
     
+    // 25% label
     sprintf(buf, "%.0f", maxPop * 0.25f);
-    RenderString(5, 140, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
+    RenderString(labelX, 150, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
     
+    // 0 label
     sprintf(buf, "0");
-    RenderString(5, 180, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
+    RenderString(labelX, 190, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
 }
 
 void StatsWindow::drawStatsInfo()

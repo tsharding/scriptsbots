@@ -330,7 +330,7 @@ void StatsWindow::drawControlsInfo()
     RenderString(20, yPos, GLUT_BITMAP_HELVETICA_12, buf, 0.0f, 0.0f, 0.0f);
     yPos += 15;
     
-    sprintf(buf, "Middle Drag - Zoom");
+    sprintf(buf, "Middle Drag - Fine zoom");
     RenderString(20, yPos, GLUT_BITMAP_HELVETICA_12, buf, 0.0f, 0.0f, 0.0f);
     yPos += 15;
     

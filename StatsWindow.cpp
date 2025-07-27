@@ -41,7 +41,7 @@ void StatsWindow::updateDisplay()
 
 void StatsWindow::createWindow()
 {
-    glutInitWindowPosition(conf::WWIDTH + 50, 30);
+    glutInitWindowPosition(conf::WWIDTH() + 50, 30);
     glutInitWindowSize(500, 800);
     statsWindowId = glutCreateWindow("ScriptBots - Stats & Controls");
     glClearColor(0.95f, 0.95f, 0.95f, 0.0f);

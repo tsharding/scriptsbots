@@ -125,17 +125,6 @@ void World::update()
         }
     }
     
-    //process temperature preferences
-    for (int i=0;i<agents.size();i++) {
-    
-        //calculate temperature at the agents spot. (based on distance from equator)
-        float dd= 2.0*abs(agents[i].pos.x/conf::WIDTH - 0.5);
-        float discomfort= abs(dd-agents[i].temperature_preference);
-        discomfort= discomfort*discomfort;
-        if (discomfort<0.08) discomfort=0;
-        agents[i].health -= conf::TEMPERATURE_DISCOMFORT*discomfort;
-    }
-
     //process indicator (used in drawing)
     for (int i=0;i<agents.size();i++){
         if(agents[i].indicator>0) agents[i].indicator -= 1;
@@ -223,8 +212,8 @@ void World::update()
 
 void World::setInputs()
 {
-    //P1 R1 G1 B1 FOOD P2 R2 G2 B2 SOUND SMELL HEALTH P3 R3 G3 B3 CLOCK1 CLOCK 2 HEARING     BLOOD_SENSOR   TEMPERATURE_SENSOR
-    //0   1  2  3  4   5   6  7 8   9     10     11   12 13 14 15 16       17      18           19                 20
+    //P1 R1 G1 B1 FOOD P2 R2 G2 B2 SOUND SMELL HEALTH P3 R3 G3 B3 CLOCK1 CLOCK 2 HEARING     BLOOD_SENSOR
+    //0   1  2  3  4   5   6  7 8   9     10     11   12 13 14 15 16       17      18           19
 
     float PI8=M_PI/8/2; //pi/8/2
     float PI38= 3*PI8; //3pi/8/2
@@ -336,16 +325,10 @@ void World::setInputs()
         a->in[18]= cap(hearaccum);
         a->in[19]= cap(blood);
         
-        //temperature varies from 0 to 1 across screen.
-        //it is 0 at equator (in middle), and 1 on edges. Agents can sense discomfort
-        float dd= 2.0*abs(a->pos.x/conf::WIDTH - 0.5);
-        float discomfort= abs(dd - a->temperature_preference);
-        a->in[20]= discomfort;
-        
-        a->in[21]= cap(p[3]);
-        a->in[22]= cap(r[3]);
-        a->in[23]= cap(g[3]);
-        a->in[24]= cap(b[3]);
+        a->in[20]= cap(p[3]);
+        a->in[21]= cap(r[3]);
+        a->in[22]= cap(g[3]);
+        a->in[23]= cap(b[3]);
                 
     }
 }

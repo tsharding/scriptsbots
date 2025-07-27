@@ -1,4 +1,4 @@
-#define INPUTSIZE 25
+#define INPUTSIZE 24
 #define OUTPUTSIZE 9
 #define NUMEYES 4
 #define BRAINSIZE 200
@@ -37,10 +37,8 @@ namespace conf {
 
     const float FOODTRANSFER= 0.001; //how much is transfered between two agents trading food? per iteration
     const float FOOD_SHARING_DISTANCE= 50; //how far away is food shared between bots?
-    
-    const float TEMPERATURE_DISCOMFORT = 0; //how quickly does health drain in nonpreferred temperatures (0= disabled. 0.005 is decent value)
 
-    const float FOOD_DISTRIBUTION_RADIUS=100; //when bot is killed, how far is its body distributed?
+const float FOOD_DISTRIBUTION_RADIUS=100; //when bot is killed, how far is its body distributed?
     
     const float REPMULT = 5; //when a body of dead animal is distributed, how much of it goes toward increasing birth counter for surrounding bots?
     

@@ -31,7 +31,6 @@ Agent::Agent()
     ir=0;
     ig=0;
     ib=0;
-    temperature_preference=randf(0,1);
     hybrid= false;
     herbivore= randf(0,1);
     repcounter= herbivore*randf(conf::REPRATEH-0.1,conf::REPRATEH+0.1) + (1-herbivore)*randf(conf::REPRATEC-0.1,conf::REPRATEC+0.1);
@@ -137,9 +136,6 @@ Agent Agent::reproduce(float MR, float MR2)
         if(a2.eyedir[i]>2*M_PI) a2.eyedir[i] = 2*M_PI;
     }
     
-    a2.temperature_preference= cap(randn(this->temperature_preference, 0.005));
-//    a2.temperature_preference= this->temperature_preference;
-    
     //mutate brain here
     a2.brain= this->brain;
     a2.brain.mutate(MR,MR2);
@@ -166,7 +162,6 @@ Agent Agent::crossover(const Agent& other)
     anew.herbivore= randf(0,1)<0.5 ? this->herbivore : other.herbivore;
     anew.MUTRATE1= randf(0,1)<0.5 ? this->MUTRATE1 : other.MUTRATE1;
     anew.MUTRATE2= randf(0,1)<0.5 ? this->MUTRATE2 : other.MUTRATE2;
-    anew.temperature_preference = randf(0,1)<0.5 ? this->temperature_preference : other.temperature_preference;
     
     anew.smellmod= randf(0,1)<0.5 ? this->smellmod : other.smellmod;
     anew.soundmod= randf(0,1)<0.5 ? this->soundmod : other.soundmod;
@@ -228,7 +223,6 @@ void Agent::saveToStream(std::ofstream& file) const
     file.write(reinterpret_cast<const char*>(&herbivore), sizeof(herbivore));
     file.write(reinterpret_cast<const char*>(&MUTRATE1), sizeof(MUTRATE1));
     file.write(reinterpret_cast<const char*>(&MUTRATE2), sizeof(MUTRATE2));
-    file.write(reinterpret_cast<const char*>(&temperature_preference), sizeof(temperature_preference));
     file.write(reinterpret_cast<const char*>(&smellmod), sizeof(smellmod));
     file.write(reinterpret_cast<const char*>(&soundmod), sizeof(soundmod));
     file.write(reinterpret_cast<const char*>(&hearmod), sizeof(hearmod));
@@ -303,7 +297,6 @@ void Agent::loadFromStream(std::ifstream& file)
     file.read(reinterpret_cast<char*>(&herbivore), sizeof(herbivore));
     file.read(reinterpret_cast<char*>(&MUTRATE1), sizeof(MUTRATE1));
     file.read(reinterpret_cast<char*>(&MUTRATE2), sizeof(MUTRATE2));
-    file.read(reinterpret_cast<char*>(&temperature_preference), sizeof(temperature_preference));
     file.read(reinterpret_cast<char*>(&smellmod), sizeof(smellmod));
     file.read(reinterpret_cast<char*>(&soundmod), sizeof(soundmod));
     file.read(reinterpret_cast<char*>(&hearmod), sizeof(hearmod));

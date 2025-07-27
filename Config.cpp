@@ -128,6 +128,55 @@ void Config::cacheValues() {
     conf_cache::CONNS = getInt("neural.connections_per_neuron", 4);
 }
 
+void Config::restoreFromSaveFile(std::ifstream& file) {
+    // Read configuration values from save file and restore to cache
+    // World dimensions
+    file.read(reinterpret_cast<char*>(&conf_cache::WIDTH), sizeof(conf_cache::WIDTH));
+    file.read(reinterpret_cast<char*>(&conf_cache::HEIGHT), sizeof(conf_cache::HEIGHT));
+    file.read(reinterpret_cast<char*>(&conf_cache::WWIDTH), sizeof(conf_cache::WWIDTH));
+    file.read(reinterpret_cast<char*>(&conf_cache::WHEIGHT), sizeof(conf_cache::WHEIGHT));
+    file.read(reinterpret_cast<char*>(&conf_cache::CZ), sizeof(conf_cache::CZ));
+    
+    // Agent settings
+    file.read(reinterpret_cast<char*>(&conf_cache::NUMBOTS), sizeof(conf_cache::NUMBOTS));
+    file.read(reinterpret_cast<char*>(&conf_cache::BOTRADIUS), sizeof(conf_cache::BOTRADIUS));
+    file.read(reinterpret_cast<char*>(&conf_cache::BOTSPEED), sizeof(conf_cache::BOTSPEED));
+    file.read(reinterpret_cast<char*>(&conf_cache::SPIKESPEED), sizeof(conf_cache::SPIKESPEED));
+    file.read(reinterpret_cast<char*>(&conf_cache::SPIKEMULT), sizeof(conf_cache::SPIKEMULT));
+    file.read(reinterpret_cast<char*>(&conf_cache::BABIES), sizeof(conf_cache::BABIES));
+    file.read(reinterpret_cast<char*>(&conf_cache::BOOSTSIZEMULT), sizeof(conf_cache::BOOSTSIZEMULT));
+    file.read(reinterpret_cast<char*>(&conf_cache::REPRATEH), sizeof(conf_cache::REPRATEH));
+    file.read(reinterpret_cast<char*>(&conf_cache::REPRATEC), sizeof(conf_cache::REPRATEC));
+    
+    // Vision and perception
+    file.read(reinterpret_cast<char*>(&conf_cache::DIST), sizeof(conf_cache::DIST));
+    file.read(reinterpret_cast<char*>(&conf_cache::METAMUTRATE1), sizeof(conf_cache::METAMUTRATE1));
+    file.read(reinterpret_cast<char*>(&conf_cache::METAMUTRATE2), sizeof(conf_cache::METAMUTRATE2));
+    
+    // Food system
+    file.read(reinterpret_cast<char*>(&conf_cache::FOODINTAKE), sizeof(conf_cache::FOODINTAKE));
+    file.read(reinterpret_cast<char*>(&conf_cache::FOODWASTE), sizeof(conf_cache::FOODWASTE));
+    file.read(reinterpret_cast<char*>(&conf_cache::FOODMAX), sizeof(conf_cache::FOODMAX));
+    file.read(reinterpret_cast<char*>(&conf_cache::FOODADDFREQ), sizeof(conf_cache::FOODADDFREQ));
+    file.read(reinterpret_cast<char*>(&conf_cache::FOODTRANSFER), sizeof(conf_cache::FOODTRANSFER));
+    file.read(reinterpret_cast<char*>(&conf_cache::FOOD_SHARING_DISTANCE), sizeof(conf_cache::FOOD_SHARING_DISTANCE));
+    file.read(reinterpret_cast<char*>(&conf_cache::FOOD_DISTRIBUTION_RADIUS), sizeof(conf_cache::FOOD_DISTRIBUTION_RADIUS));
+    file.read(reinterpret_cast<char*>(&conf_cache::REPMULT), sizeof(conf_cache::REPMULT));
+    
+    // Simulation settings
+    file.read(reinterpret_cast<char*>(&conf_cache::AUTOSAVE_FREQUENCY), sizeof(conf_cache::AUTOSAVE_FREQUENCY));
+    file.read(reinterpret_cast<char*>(&conf_cache::RANDOM_SPAWN_EPOCH_INTERVAL), sizeof(conf_cache::RANDOM_SPAWN_EPOCH_INTERVAL));
+    file.read(reinterpret_cast<char*>(&conf_cache::RANDOM_SPAWN_COUNT), sizeof(conf_cache::RANDOM_SPAWN_COUNT));
+    file.read(reinterpret_cast<char*>(&conf_cache::INITIAL_CLOSED_ENVIRONMENT), sizeof(conf_cache::INITIAL_CLOSED_ENVIRONMENT));
+    
+    // Neural network settings
+    file.read(reinterpret_cast<char*>(&conf_cache::INPUTSIZE), sizeof(conf_cache::INPUTSIZE));
+    file.read(reinterpret_cast<char*>(&conf_cache::OUTPUTSIZE), sizeof(conf_cache::OUTPUTSIZE));
+    file.read(reinterpret_cast<char*>(&conf_cache::NUMEYES), sizeof(conf_cache::NUMEYES));
+    file.read(reinterpret_cast<char*>(&conf_cache::BRAINSIZE), sizeof(conf_cache::BRAINSIZE));
+    file.read(reinterpret_cast<char*>(&conf_cache::CONNS), sizeof(conf_cache::CONNS));
+}
+
 bool Config::save() {
     std::ofstream file(configFile);
     if (!file.is_open()) {

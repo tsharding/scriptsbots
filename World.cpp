@@ -722,6 +722,57 @@ bool World::saveToFile(const std::string& filename)
     const char* header = "SCRIPTBOTS_SAVE";
     file.write(header, 15);
     
+    // Write version number (for backward compatibility)
+    int version = 2; // Version 2 includes configuration data
+    file.write(reinterpret_cast<const char*>(&version), sizeof(version));
+    
+    // Write configuration values to ensure save/load compatibility
+    // World dimensions
+    file.write(reinterpret_cast<const char*>(&conf_cache::WIDTH), sizeof(conf_cache::WIDTH));
+    file.write(reinterpret_cast<const char*>(&conf_cache::HEIGHT), sizeof(conf_cache::HEIGHT));
+    file.write(reinterpret_cast<const char*>(&conf_cache::WWIDTH), sizeof(conf_cache::WWIDTH));
+    file.write(reinterpret_cast<const char*>(&conf_cache::WHEIGHT), sizeof(conf_cache::WHEIGHT));
+    file.write(reinterpret_cast<const char*>(&conf_cache::CZ), sizeof(conf_cache::CZ));
+    
+    // Agent settings
+    file.write(reinterpret_cast<const char*>(&conf_cache::NUMBOTS), sizeof(conf_cache::NUMBOTS));
+    file.write(reinterpret_cast<const char*>(&conf_cache::BOTRADIUS), sizeof(conf_cache::BOTRADIUS));
+    file.write(reinterpret_cast<const char*>(&conf_cache::BOTSPEED), sizeof(conf_cache::BOTSPEED));
+    file.write(reinterpret_cast<const char*>(&conf_cache::SPIKESPEED), sizeof(conf_cache::SPIKESPEED));
+    file.write(reinterpret_cast<const char*>(&conf_cache::SPIKEMULT), sizeof(conf_cache::SPIKEMULT));
+    file.write(reinterpret_cast<const char*>(&conf_cache::BABIES), sizeof(conf_cache::BABIES));
+    file.write(reinterpret_cast<const char*>(&conf_cache::BOOSTSIZEMULT), sizeof(conf_cache::BOOSTSIZEMULT));
+    file.write(reinterpret_cast<const char*>(&conf_cache::REPRATEH), sizeof(conf_cache::REPRATEH));
+    file.write(reinterpret_cast<const char*>(&conf_cache::REPRATEC), sizeof(conf_cache::REPRATEC));
+    
+    // Vision and perception
+    file.write(reinterpret_cast<const char*>(&conf_cache::DIST), sizeof(conf_cache::DIST));
+    file.write(reinterpret_cast<const char*>(&conf_cache::METAMUTRATE1), sizeof(conf_cache::METAMUTRATE1));
+    file.write(reinterpret_cast<const char*>(&conf_cache::METAMUTRATE2), sizeof(conf_cache::METAMUTRATE2));
+    
+    // Food system
+    file.write(reinterpret_cast<const char*>(&conf_cache::FOODINTAKE), sizeof(conf_cache::FOODINTAKE));
+    file.write(reinterpret_cast<const char*>(&conf_cache::FOODWASTE), sizeof(conf_cache::FOODWASTE));
+    file.write(reinterpret_cast<const char*>(&conf_cache::FOODMAX), sizeof(conf_cache::FOODMAX));
+    file.write(reinterpret_cast<const char*>(&conf_cache::FOODADDFREQ), sizeof(conf_cache::FOODADDFREQ));
+    file.write(reinterpret_cast<const char*>(&conf_cache::FOODTRANSFER), sizeof(conf_cache::FOODTRANSFER));
+    file.write(reinterpret_cast<const char*>(&conf_cache::FOOD_SHARING_DISTANCE), sizeof(conf_cache::FOOD_SHARING_DISTANCE));
+    file.write(reinterpret_cast<const char*>(&conf_cache::FOOD_DISTRIBUTION_RADIUS), sizeof(conf_cache::FOOD_DISTRIBUTION_RADIUS));
+    file.write(reinterpret_cast<const char*>(&conf_cache::REPMULT), sizeof(conf_cache::REPMULT));
+    
+    // Simulation settings
+    file.write(reinterpret_cast<const char*>(&conf_cache::AUTOSAVE_FREQUENCY), sizeof(conf_cache::AUTOSAVE_FREQUENCY));
+    file.write(reinterpret_cast<const char*>(&conf_cache::RANDOM_SPAWN_EPOCH_INTERVAL), sizeof(conf_cache::RANDOM_SPAWN_EPOCH_INTERVAL));
+    file.write(reinterpret_cast<const char*>(&conf_cache::RANDOM_SPAWN_COUNT), sizeof(conf_cache::RANDOM_SPAWN_COUNT));
+    file.write(reinterpret_cast<const char*>(&conf_cache::INITIAL_CLOSED_ENVIRONMENT), sizeof(conf_cache::INITIAL_CLOSED_ENVIRONMENT));
+    
+    // Neural network settings
+    file.write(reinterpret_cast<const char*>(&conf_cache::INPUTSIZE), sizeof(conf_cache::INPUTSIZE));
+    file.write(reinterpret_cast<const char*>(&conf_cache::OUTPUTSIZE), sizeof(conf_cache::OUTPUTSIZE));
+    file.write(reinterpret_cast<const char*>(&conf_cache::NUMEYES), sizeof(conf_cache::NUMEYES));
+    file.write(reinterpret_cast<const char*>(&conf_cache::BRAINSIZE), sizeof(conf_cache::BRAINSIZE));
+    file.write(reinterpret_cast<const char*>(&conf_cache::CONNS), sizeof(conf_cache::CONNS));
+    
     // Write world state
     file.write(reinterpret_cast<const char*>(&modcounter), sizeof(modcounter));
     file.write(reinterpret_cast<const char*>(&current_epoch), sizeof(current_epoch));
@@ -778,6 +829,43 @@ bool World::loadFromFile(const std::string& filename)
         printf("Error: Invalid save file format\n");
         file.close();
         return false;
+    }
+    
+    // Read version number (if available)
+    int version = 1; // Default to version 1 for backward compatibility
+    std::streampos currentPos = file.tellg();
+    file.seekg(0, std::ios::end);
+    std::streampos endPos = file.tellg();
+    file.seekg(currentPos);
+    
+    // Check if this is likely a version 2+ file by looking at the expected size
+    // Version 1 files start with world state immediately after header
+    // Version 2+ files have version number + configuration data after header
+    std::streamoff remainingSize = endPos - currentPos;
+    
+    // If there's enough data for a version number and it's a reasonable value, read it
+    if (remainingSize >= static_cast<std::streamoff>(sizeof(version))) {
+        int testVersion;
+        file.read(reinterpret_cast<char*>(&testVersion), sizeof(testVersion));
+        
+        // Only accept reasonable version numbers (1-10)
+        if (testVersion >= 1 && testVersion <= 10) {
+            version = testVersion;
+        } else {
+            // This was not a version number, rewind and treat as version 1
+            file.seekg(currentPos);
+            version = 1;
+        }
+    }
+    
+    // Handle configuration data based on version
+    if (version >= 2) {
+        // Version 2+ includes configuration data - restore from save file
+        g_config.restoreFromSaveFile(file);
+        printf("Loaded configuration from save file (version %d)\n", version);
+    } else {
+        // Version 1 (old format) - use current configuration
+        printf("Loading old format save file (version %d) - using current configuration\n", version);
     }
     
     // Read world state

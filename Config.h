@@ -46,6 +46,9 @@ public:
     
     // Cache configuration values for performance
     void cacheValues();
+    
+    // Restore cached values from a save file (for load compatibility)
+    void restoreFromSaveFile(std::ifstream& file);
 };
 
 // Global configuration instance

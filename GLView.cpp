@@ -63,19 +63,21 @@ GLView::GLView(World *s) :
         showAgentInfo(true),
         modcounter(0),
         frames(0),
-        lastUpdate(0)
+        lastUpdate(0),
+        windowWidth(conf::WWIDTH()),
+        windowHeight(conf::WHEIGHT())
 {
 
     // Calculate initial zoom to fit world in window
     float worldAspectRatio = (float)conf::WIDTH() / conf::HEIGHT();
-    float windowAspectRatio = (float)conf::WWIDTH() / conf::WHEIGHT();
+    float windowAspectRatio = (float)windowWidth / windowHeight;
     
     if (worldAspectRatio > windowAspectRatio) {
         // World is wider than window - fit to width
-        scalemult = (float)conf::WWIDTH() / conf::WIDTH();
+        scalemult = (float)windowWidth / conf::WIDTH();
     } else {
         // World is taller than window - fit to height
-        scalemult = (float)conf::WHEIGHT() / conf::HEIGHT();
+        scalemult = (float)windowHeight / conf::HEIGHT();
     }
     
     // Center the world in the window
@@ -94,10 +96,21 @@ GLView::~GLView()
 }
 void GLView::changeSize(int w, int h)
 {
+    // Store the new window dimensions
+    windowWidth = w;
+    windowHeight = h;
+    
+    // Set the viewport to the new window size
+    glViewport(0, 0, w, h);
+    
     // Reset the coordinate system before modifying
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0,conf::WWIDTH(),conf::WHEIGHT(),0,0,1);
+    glOrtho(0, w, h, 0, 0, 1);
+    
+    // Switch back to modelview matrix
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 }
 
 void GLView::processMouse(int button, int state, int x, int y)
@@ -122,11 +135,11 @@ void GLView::processMouse(int button, int state, int x, int y)
         if (scalemult > 5.0f) scalemult = 5.0f;
         
         // Adjust translation to zoom towards mouse cursor
-        float mouseXWorld = (x - conf::WWIDTH()/2) / oldScale - xtranslate;
-        float mouseYWorld = (y - conf::WHEIGHT()/2) / oldScale - ytranslate;
+        float mouseXWorld = (x - windowWidth/2) / oldScale - xtranslate;
+        float mouseYWorld = (y - windowHeight/2) / oldScale - ytranslate;
         
-        xtranslate = (x - conf::WWIDTH()/2) / scalemult - mouseXWorld;
-        ytranslate = (y - conf::WHEIGHT()/2) / scalemult - mouseYWorld;
+        xtranslate = (x - windowWidth/2) / scalemult - mouseXWorld;
+        ytranslate = (y - windowHeight/2) / scalemult - mouseYWorld;
         
         mousex = x; mousey = y;
         return;
@@ -134,8 +147,8 @@ void GLView::processMouse(int button, int state, int x, int y)
     
     //have world deal with it. First translate to world coordinates though
     if(button==0){
-            int wx= (int) ((x-conf::WWIDTH()/2)/scalemult)-xtranslate;
-    int wy= (int) ((y-conf::WHEIGHT()/2)/scalemult)-ytranslate;
+            int wx= (int) ((x-windowWidth/2)/scalemult)-xtranslate;
+    int wy= (int) ((y-windowHeight/2)/scalemult)-ytranslate;
         world->processMouse(button, state, wx, wy);
     }
     
@@ -337,7 +350,7 @@ void GLView::renderScene()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glPushMatrix();
 
-    glTranslatef(conf::WWIDTH()/2, conf::WHEIGHT()/2, 0.0f);    
+    glTranslatef(windowWidth/2, windowHeight/2, 0.0f);    
     glScalef(scalemult, scalemult, 1.0f);
     
     if(following==0) {
@@ -346,8 +359,8 @@ void GLView::renderScene()
         
         float xi=0, yi=0;
         world->positionOfInterest(following, xi, yi);
-        //xi= (conf::WWIDTH/2-xi); //*scalemult;
-        //yi= (conf::WHEIGHT/2-yi); //*scalemult;
+        //xi= (windowWidth/2-xi); //*scalemult;
+        //yi= (windowHeight/2-yi); //*scalemult;
         
         glTranslatef(-xi, -yi, 0.0f);
         

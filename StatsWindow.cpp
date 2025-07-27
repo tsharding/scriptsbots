@@ -39,9 +39,16 @@ void StatsWindow::updateDisplay()
     }
 }
 
-void StatsWindow::createWindow()
+void StatsWindow::createWindow(int x, int y)
 {
-    glutInitWindowPosition(conf::WWIDTH() + 50, 30);
+    // Use provided position or calculate default position
+    if (x == -1 || y == -1) {
+        // Default positioning (original behavior)
+        glutInitWindowPosition(conf::WWIDTH() + 50, 30);
+    } else {
+        glutInitWindowPosition(x, y);
+    }
+    
     glutInitWindowSize(500, 800);
     statsWindowId = glutCreateWindow("ScriptBots - Stats & Controls");
     glClearColor(0.95f, 0.95f, 0.95f, 0.0f);

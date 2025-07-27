@@ -7,6 +7,34 @@
 
 #include <stdio.h>
 
+// Helper function to calculate window positions that ensure top bars are visible
+void calculateWindowPositions(int worldWidth, int statsWidth, 
+                             int& worldX, int& worldY, int& statsX, int& statsY) {
+    // Get screen dimensions
+    int screenWidth = glutGet(GLUT_SCREEN_WIDTH);
+    int screenHeight = glutGet(GLUT_SCREEN_HEIGHT);
+    
+    // Calculate world window position (top right corner at middle of top right quadrant)
+    // Top right quadrant center: (3/4 * screenWidth, 1/4 * screenHeight)
+    worldX = (3 * screenWidth / 4) - worldWidth;
+    worldY = (screenHeight / 4) - 30; // 30 pixels from top to account for window decorations
+    
+    // Calculate stats window position (a little bit away from top right of screen)
+    statsX = screenWidth - statsWidth - 50; // 50 pixels from right edge
+    statsY = 50; // 50 pixels from top
+    
+    // Ensure windows don't go off screen
+    if (worldX < 0) worldX = 0;
+    if (worldY < 0) worldY = 0;
+    if (statsX < 0) statsX = 0;
+    if (statsY < 0) statsY = 0;
+    
+    // Ensure windows don't overlap too much
+    if (worldX + worldWidth > statsX) {
+        worldX = statsX - worldWidth - 20; // 20 pixel gap
+        if (worldX < 0) worldX = 0;
+    }
+}
 
 GLView* GLVIEW = new GLView(0);
 StatsWindow* STATSWINDOW = nullptr;
@@ -70,8 +98,17 @@ int main(int argc, char **argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
     
+    // Calculate proper window positions to ensure top bars are visible
+    int worldX, worldY, statsX, statsY;
+    calculateWindowPositions(conf::WWIDTH(), 500, 
+                           worldX, worldY, statsX, statsY);
+    
+    printf("Screen dimensions: %dx%d\n", glutGet(GLUT_SCREEN_WIDTH), glutGet(GLUT_SCREEN_HEIGHT));
+    printf("World window position: (%d, %d)\n", worldX, worldY);
+    printf("Stats window position: (%d, %d)\n", statsX, statsY);
+    
     // Create main world window
-    glutInitWindowPosition(30,30);
+    glutInitWindowPosition(worldX, worldY);
     glutInitWindowSize(conf::WWIDTH(),conf::WHEIGHT());
     int mainWindowId = glutCreateWindow("ScriptBots - World View");
     glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
@@ -84,7 +121,7 @@ int main(int argc, char **argv) {
 
     // Create stats window
     STATSWINDOW = new StatsWindow(world);
-    StatsWindow::createWindow();
+    StatsWindow::createWindow(statsX, statsY);
     
     // Set the main window as the current window
     glutSetWindow(mainWindowId);

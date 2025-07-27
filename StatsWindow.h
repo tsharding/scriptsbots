@@ -22,7 +22,7 @@ public:
     void processKeys(unsigned char key, int x, int y);
     
     // Window management
-    static void createWindow();
+    static void createWindow(int x = -1, int y = -1);
     static int getWindowId() { return statsWindowId; }
     
     // Update function

@@ -57,6 +57,10 @@ private:
     
     int following;
     
+    // Window dimensions for dynamic resizing
+    int windowWidth;
+    int windowHeight;
+    
 };
 
 #endif // GLVIEW_H

@@ -959,3 +959,30 @@ bool World::loadFromFile(const std::string& filename)
     return true;
 }
 
+float World::getTotalFood() const
+{
+    float total = 0.0f;
+    for (int i = 0; i < FW; i++) {
+        for (int j = 0; j < FH; j++) {
+            total += food[i][j];
+        }
+    }
+    return total;
+}
+
+float World::getFoodTilePercentage() const
+{
+    int tilesWithFood = 0;
+    int totalTiles = FW * FH;
+    
+    for (int i = 0; i < FW; i++) {
+        for (int j = 0; j < FH; j++) {
+            if (food[i][j] > 0.0f) {
+                tilesWithFood++;
+            }
+        }
+    }
+    
+    return (totalTiles > 0) ? (100.0f * tilesWithFood / totalTiles) : 0.0f;
+}
+

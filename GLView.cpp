@@ -300,11 +300,25 @@ void GLView::processNormalKeys(unsigned char key, int x, int y)
         if(following==0) following = 1; //follow oldest agent: toggle
         else following =0;
     } else if(key =='j' || key =='J') {
-        // Recenter the camera view
+        // Recenter the camera view and zoom to fit entire world
         following = 0; // Stop following any agent
+        
+        // Calculate zoom to fit world on screen
+        float scaleX = (float)windowWidth / conf::WIDTH();
+        float scaleY = (float)windowHeight / conf::HEIGHT();
+        
+        // Use the smaller scale to ensure the world fits in both dimensions
+        scalemult = (scaleX < scaleY) ? scaleX : scaleY;
+        
+        // Ensure zoom stays within reasonable bounds
+        if (scalemult < 0.01f) scalemult = 0.01f;
+        if (scalemult > 5.0f) scalemult = 5.0f;
+        
+        // Center the world
         xtranslate = -conf::WIDTH() / 2.0f;
         ytranslate = -conf::HEIGHT() / 2.0f;
-        printf("Camera recentered\n");
+        
+        printf("Camera recentered and zoomed to fit world\n");
     } else {
         printf("Unknown key pressed: %i\n", key);
     }

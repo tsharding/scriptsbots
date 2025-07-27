@@ -261,6 +261,14 @@ void StatsWindow::drawStatsInfo()
     
     sprintf(buf, "Epoch: %d", world->epoch());
     RenderString(20, yPos, GLUT_BITMAP_HELVETICA_12, buf, 0.0f, 0.0f, 0.0f);
+    yPos += 15;
+    
+    sprintf(buf, "Total Food: %.1f", world->getTotalFood());
+    RenderString(20, yPos, GLUT_BITMAP_HELVETICA_12, buf, 0.0f, 0.0f, 0.0f);
+    yPos += 15;
+    
+    sprintf(buf, "Food Tiles: %.2f%%", world->getFoodTilePercentage());
+    RenderString(20, yPos, GLUT_BITMAP_HELVETICA_12, buf, 0.0f, 0.0f, 0.0f);
     yPos += 20;
 }
 

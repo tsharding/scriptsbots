@@ -54,6 +54,10 @@ public:
     std::vector<int> numCarnivore;
     std::vector<int> numHerbivore;
     
+    // Food statistics methods
+    float getTotalFood() const;
+    float getFoodTilePercentage() const;
+    
 private:
     void setInputs();
     void processOutputs();

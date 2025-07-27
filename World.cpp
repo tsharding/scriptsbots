@@ -16,7 +16,7 @@ World::World() :
         idcounter(0),
         FW(conf::WIDTH/conf::CZ),
         FH(conf::HEIGHT/conf::CZ),
-        CLOSED(false)
+        CLOSED(conf::INITIAL_CLOSED_ENVIRONMENT)
 {
     addRandomBots(conf::NUMBOTS);
     //inititalize food layer

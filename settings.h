@@ -48,6 +48,8 @@ namespace conf {
     
     const int RANDOM_SPAWN_EPOCH_INTERVAL = 5; //how often (in epochs) to spawn random agents
     const int RANDOM_SPAWN_COUNT = 5; //number of random agents to spawn each time
+    
+    const bool INITIAL_CLOSED_ENVIRONMENT = true; //initial closed environment status (true = closed, false = open)
 }
 
 #endif

@@ -95,6 +95,8 @@ namespace conf_cache {
     extern int RANDOM_SPAWN_EPOCH_INTERVAL;
     extern int RANDOM_SPAWN_COUNT;
     extern bool INITIAL_CLOSED_ENVIRONMENT;
+    extern int HERBIVORE_EXTINCTION_REPOPULATION_COUNT;
+    extern int CARNIVORE_EXTINCTION_REPOPULATION_COUNT;
     
     // Neural network settings
     extern int INPUTSIZE;
@@ -145,6 +147,8 @@ namespace conf {
     inline int RANDOM_SPAWN_EPOCH_INTERVAL() { return conf_cache::RANDOM_SPAWN_EPOCH_INTERVAL; }
     inline int RANDOM_SPAWN_COUNT() { return conf_cache::RANDOM_SPAWN_COUNT; }
     inline bool INITIAL_CLOSED_ENVIRONMENT() { return conf_cache::INITIAL_CLOSED_ENVIRONMENT; }
+    inline int HERBIVORE_EXTINCTION_REPOPULATION_COUNT() { return conf_cache::HERBIVORE_EXTINCTION_REPOPULATION_COUNT; }
+    inline int CARNIVORE_EXTINCTION_REPOPULATION_COUNT() { return conf_cache::CARNIVORE_EXTINCTION_REPOPULATION_COUNT; }
     
     // Neural network settings
     inline int INPUTSIZE() { return conf_cache::INPUTSIZE; }

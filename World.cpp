@@ -77,19 +77,19 @@ void World::update()
             addRandomAgents(conf::RANDOM_SPAWN_COUNT());
         }
         
-        // Population recovery: if carnivores or herbivores are at 0, spawn 25 random agents of that type
+        // Population recovery: if carnivores or herbivores are at 0, spawn new random agents of that type
         std::pair<int,int> num_herbs_carns = numHerbCarnivores();
         
         if (num_herbs_carns.second == 0) { // No carnivores
-            printf("Carnivore population extinct! Spawning 25 new carnivores.\n");
-            for (int i = 0; i < 25; i++) {
+            printf("Carnivore population extinct! Spawning %d new carnivores.\n", conf::CARNIVORE_EXTINCTION_REPOPULATION_COUNT());
+            for (int i = 0; i < conf::CARNIVORE_EXTINCTION_REPOPULATION_COUNT(); i++) {
                 addCarnivore();
             }
         }
         
         if (num_herbs_carns.first == 0) { // No herbivores
-            printf("Herbivore population extinct! Spawning 25 new herbivores.\n");
-            for (int i = 0; i < 25; i++) {
+            printf("Herbivore population extinct! Spawning %d new herbivores.\n", conf::HERBIVORE_EXTINCTION_REPOPULATION_COUNT());
+            for (int i = 0; i < conf::HERBIVORE_EXTINCTION_REPOPULATION_COUNT(); i++) {
                 addHerbivore();
             }
         }

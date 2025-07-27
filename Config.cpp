@@ -46,6 +46,8 @@ namespace conf_cache {
     int RANDOM_SPAWN_EPOCH_INTERVAL = 5;
     int RANDOM_SPAWN_COUNT = 5;
     bool INITIAL_CLOSED_ENVIRONMENT = true;
+    int HERBIVORE_EXTINCTION_REPOPULATION_COUNT = 25;
+    int CARNIVORE_EXTINCTION_REPOPULATION_COUNT = 25;
     
     // Neural network settings
     int INPUTSIZE = 24;
@@ -121,6 +123,8 @@ void Config::cacheValues() {
     conf_cache::RANDOM_SPAWN_EPOCH_INTERVAL = getInt("simulation.random_spawn_epoch_interval", 5);
     conf_cache::RANDOM_SPAWN_COUNT = getInt("simulation.random_spawn_count", 5);
     conf_cache::INITIAL_CLOSED_ENVIRONMENT = getBool("simulation.initial_closed_environment", true);
+    conf_cache::HERBIVORE_EXTINCTION_REPOPULATION_COUNT = getInt("simulation.herbivore_extinction_repopulation_count", 25);
+    conf_cache::CARNIVORE_EXTINCTION_REPOPULATION_COUNT = getInt("simulation.carnivore_extinction_repopulation_count", 25);
     
     // Neural network settings
     conf_cache::INPUTSIZE = getInt("neural.input_size", 24);
@@ -171,6 +175,8 @@ void Config::restoreFromSaveFile(std::ifstream& file) {
     file.read(reinterpret_cast<char*>(&conf_cache::RANDOM_SPAWN_EPOCH_INTERVAL), sizeof(conf_cache::RANDOM_SPAWN_EPOCH_INTERVAL));
     file.read(reinterpret_cast<char*>(&conf_cache::RANDOM_SPAWN_COUNT), sizeof(conf_cache::RANDOM_SPAWN_COUNT));
     file.read(reinterpret_cast<char*>(&conf_cache::INITIAL_CLOSED_ENVIRONMENT), sizeof(conf_cache::INITIAL_CLOSED_ENVIRONMENT));
+    file.read(reinterpret_cast<char*>(&conf_cache::HERBIVORE_EXTINCTION_REPOPULATION_COUNT), sizeof(conf_cache::HERBIVORE_EXTINCTION_REPOPULATION_COUNT));
+    file.read(reinterpret_cast<char*>(&conf_cache::CARNIVORE_EXTINCTION_REPOPULATION_COUNT), sizeof(conf_cache::CARNIVORE_EXTINCTION_REPOPULATION_COUNT));
     
     // Neural network settings
     file.read(reinterpret_cast<char*>(&conf_cache::INPUTSIZE), sizeof(conf_cache::INPUTSIZE));

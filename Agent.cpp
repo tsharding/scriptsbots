@@ -312,7 +312,13 @@ void Agent::loadFromStream(std::ifstream& file)
     file.read(reinterpret_cast<char*>(eyedir.data()), eyeSize * sizeof(float));
     
     // Load brain
-    brain.loadFromStream(file);
+    try {
+        brain.loadFromStream(file);
+    } catch (...) {
+        // If brain loading fails, create a new brain
+        printf("Warning: Failed to load brain for agent, creating new brain\n");
+        brain = MLPBrain();
+    }
     
     // Load mutations
     size_t mutSize;

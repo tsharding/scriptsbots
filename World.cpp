@@ -774,12 +774,15 @@ bool World::saveToFile(const std::string& filename)
     file.write(reinterpret_cast<const char*>(&conf_cache::FOOD_SHARING_DISTANCE), sizeof(conf_cache::FOOD_SHARING_DISTANCE));
     file.write(reinterpret_cast<const char*>(&conf_cache::FOOD_DISTRIBUTION_RADIUS), sizeof(conf_cache::FOOD_DISTRIBUTION_RADIUS));
     file.write(reinterpret_cast<const char*>(&conf_cache::REPMULT), sizeof(conf_cache::REPMULT));
+    file.write(reinterpret_cast<const char*>(&conf_cache::PROP_INIT_FOOD_FILLED), sizeof(conf_cache::PROP_INIT_FOOD_FILLED));
     
     // Simulation settings
     file.write(reinterpret_cast<const char*>(&conf_cache::AUTOSAVE_FREQUENCY), sizeof(conf_cache::AUTOSAVE_FREQUENCY));
     file.write(reinterpret_cast<const char*>(&conf_cache::RANDOM_SPAWN_EPOCH_INTERVAL), sizeof(conf_cache::RANDOM_SPAWN_EPOCH_INTERVAL));
     file.write(reinterpret_cast<const char*>(&conf_cache::RANDOM_SPAWN_COUNT), sizeof(conf_cache::RANDOM_SPAWN_COUNT));
     file.write(reinterpret_cast<const char*>(&conf_cache::INITIAL_CLOSED_ENVIRONMENT), sizeof(conf_cache::INITIAL_CLOSED_ENVIRONMENT));
+    file.write(reinterpret_cast<const char*>(&conf_cache::HERBIVORE_EXTINCTION_REPOPULATION_COUNT), sizeof(conf_cache::HERBIVORE_EXTINCTION_REPOPULATION_COUNT));
+    file.write(reinterpret_cast<const char*>(&conf_cache::CARNIVORE_EXTINCTION_REPOPULATION_COUNT), sizeof(conf_cache::CARNIVORE_EXTINCTION_REPOPULATION_COUNT));
     
     // Neural network settings
     file.write(reinterpret_cast<const char*>(&conf_cache::INPUTSIZE), sizeof(conf_cache::INPUTSIZE));
@@ -878,6 +881,20 @@ bool World::loadFromFile(const std::string& filename)
         // Version 2+ includes configuration data - restore from save file
         g_config.restoreFromSaveFile(file);
         printf("Loaded configuration from save file (version %d)\n", version);
+        
+        // Validate critical configuration values to prevent division by zero
+        if (conf_cache::CZ <= 0) {
+            printf("Error: Invalid CZ value (%d) in save file, using default\n", conf_cache::CZ);
+            conf_cache::CZ = 10; // Default value
+        }
+        if (conf_cache::WIDTH <= 0) {
+            printf("Error: Invalid WIDTH value (%d) in save file, using default\n", conf_cache::WIDTH);
+            conf_cache::WIDTH = 800; // Default value
+        }
+        if (conf_cache::HEIGHT <= 0) {
+            printf("Error: Invalid HEIGHT value (%d) in save file, using default\n", conf_cache::HEIGHT);
+            conf_cache::HEIGHT = 600; // Default value
+        }
     } else {
         // Version 1 (old format) - use current configuration
         printf("Loading old format save file (version %d) - using current configuration\n", version);
@@ -894,6 +911,13 @@ bool World::loadFromFile(const std::string& filename)
     file.read(reinterpret_cast<char*>(&FH), sizeof(FH));
     file.read(reinterpret_cast<char*>(&fx), sizeof(fx));
     file.read(reinterpret_cast<char*>(&fy), sizeof(fy));
+    
+    // Validate food grid dimensions
+    if (FW <= 0 || FH <= 0) {
+        printf("Error: Invalid food grid dimensions (%d x %d) in save file, recalculating\n", FW, FH);
+        FW = conf_cache::WIDTH / conf_cache::CZ;
+        FH = conf_cache::HEIGHT / conf_cache::CZ;
+    }
     
     // Resize food vector and read data row by row
     food.resize(FW, std::vector<float>(FH, 0));
@@ -915,6 +939,13 @@ bool World::loadFromFile(const std::string& filename)
     // Read agents
     size_t numAgents;
     file.read(reinterpret_cast<char*>(&numAgents), sizeof(numAgents));
+    
+    // Validate number of agents
+    if (numAgents > 10000) { // Reasonable upper limit
+        printf("Error: Invalid number of agents (%zu) in save file, limiting to 1000\n", numAgents);
+        numAgents = 1000;
+    }
+    
     agents.clear();
     agents.reserve(numAgents);
     for (size_t i = 0; i < numAgents; ++i) {

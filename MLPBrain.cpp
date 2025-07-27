@@ -243,6 +243,13 @@ void MLPBrain::loadFromStream(std::ifstream& file)
     // Load number of boxes
     size_t numBoxes;
     file.read(reinterpret_cast<char*>(&numBoxes), sizeof(numBoxes));
+    
+    // Validate number of boxes
+    if (numBoxes > 1000) { // Reasonable upper limit
+        printf("Warning: Invalid number of brain boxes (%zu), limiting to 100\n", numBoxes);
+        numBoxes = 100;
+    }
+    
     boxes.resize(numBoxes);
     
     // Load each box
@@ -250,18 +257,30 @@ void MLPBrain::loadFromStream(std::ifstream& file)
         // Load weights
         size_t wSize;
         file.read(reinterpret_cast<char*>(&wSize), sizeof(wSize));
+        if (wSize > 1000) { // Reasonable upper limit
+            printf("Warning: Invalid weight size (%zu), limiting to 100\n", wSize);
+            wSize = 100;
+        }
         box.w.resize(wSize);
         file.read(reinterpret_cast<char*>(box.w.data()), wSize * sizeof(float));
         
         // Load IDs
         size_t idSize;
         file.read(reinterpret_cast<char*>(&idSize), sizeof(idSize));
+        if (idSize > 1000) { // Reasonable upper limit
+            printf("Warning: Invalid ID size (%zu), limiting to 100\n", idSize);
+            idSize = 100;
+        }
         box.id.resize(idSize);
         file.read(reinterpret_cast<char*>(box.id.data()), idSize * sizeof(int));
         
         // Load types
         size_t typeSize;
         file.read(reinterpret_cast<char*>(&typeSize), sizeof(typeSize));
+        if (typeSize > 1000) { // Reasonable upper limit
+            printf("Warning: Invalid type size (%zu), limiting to 100\n", typeSize);
+            typeSize = 100;
+        }
         box.type.resize(typeSize);
         file.read(reinterpret_cast<char*>(box.type.data()), typeSize * sizeof(int));
         

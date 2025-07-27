@@ -69,16 +69,11 @@ GLView::GLView(World *s) :
 {
 
     // Calculate initial zoom to fit world in window
-    float worldAspectRatio = (float)conf::WIDTH() / conf::HEIGHT();
-    float windowAspectRatio = (float)windowWidth / windowHeight;
+    float scaleX = (float)windowWidth / conf::WIDTH();
+    float scaleY = (float)windowHeight / conf::HEIGHT();
     
-    if (worldAspectRatio > windowAspectRatio) {
-        // World is wider than window - fit to width
-        scalemult = (float)windowWidth / conf::WIDTH();
-    } else {
-        // World is taller than window - fit to height
-        scalemult = (float)windowHeight / conf::HEIGHT();
-    }
+    // Use the smaller scale to ensure the world fits in both dimensions
+    scalemult = (scaleX < scaleY) ? scaleX : scaleY;
     
     // Center the world in the window
     xtranslate = -conf::WIDTH() / 2.0f;
@@ -111,6 +106,21 @@ void GLView::changeSize(int w, int h)
     // Switch back to modelview matrix
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+    
+    // Recalculate zoom to fit world in the new window size
+    float scaleX = (float)windowWidth / conf::WIDTH();
+    float scaleY = (float)windowHeight / conf::HEIGHT();
+    
+    // Use the smaller scale to ensure the world fits in both dimensions
+    scalemult = (scaleX < scaleY) ? scaleX : scaleY;
+    
+    // Ensure zoom stays within reasonable bounds
+    if (scalemult < 0.01f) scalemult = 0.01f;
+    if (scalemult > 5.0f) scalemult = 5.0f;
+    
+    // Center the world
+    xtranslate = -conf::WIDTH() / 2.0f;
+    ytranslate = -conf::HEIGHT() / 2.0f;
 }
 
 void GLView::processMouse(int button, int state, int x, int y)

@@ -316,6 +316,10 @@ void StatsWindow::drawControlsInfo()
     
     sprintf(buf, "o - Follow oldest agent");
     RenderString(20, yPos, GLUT_BITMAP_HELVETICA_12, buf, 0.0f, 0.0f, 0.0f);
+    yPos += 15;
+    
+    sprintf(buf, "j - Recenter camera view");
+    RenderString(20, yPos, GLUT_BITMAP_HELVETICA_12, buf, 0.0f, 0.0f, 0.0f);
     yPos += 20;
     
     sprintf(buf, "Mouse Controls:");

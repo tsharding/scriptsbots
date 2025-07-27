@@ -299,6 +299,12 @@ void GLView::processNormalKeys(unsigned char key, int x, int y)
     } else if(key =='o') {
         if(following==0) following = 1; //follow oldest agent: toggle
         else following =0;
+    } else if(key =='j' || key =='J') {
+        // Recenter the camera view
+        following = 0; // Stop following any agent
+        xtranslate = -conf::WIDTH() / 2.0f;
+        ytranslate = -conf::HEIGHT() / 2.0f;
+        printf("Camera recentered\n");
     } else {
         printf("Unknown key pressed: %i\n", key);
     }

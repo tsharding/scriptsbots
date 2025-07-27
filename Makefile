@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++11 -Wall -Wextra -O2
+CXXFLAGS = -std=c++11 -Wall -Wextra -O2 -DHAVE_OPENMP
 GLUT_FLAGS = $(shell pkg-config --cflags --libs glut)
 OPENGL_FLAGS = -lGL -lGLU
 OPENMP_FLAGS = -fopenmp
@@ -31,6 +31,6 @@ clean:
 # Install dependencies (Ubuntu/Debian)
 install-deps:
 	sudo apt update
-	sudo apt install -y build-essential cmake freeglut3-dev libgl1-mesa-dev libglu1-mesa-dev
+	sudo apt install -y build-essential freeglut3-dev libgl1-mesa-dev libglu1-mesa-dev
 
 .PHONY: all clean install-deps 

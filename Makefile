@@ -24,6 +24,11 @@ $(TARGET): $(OBJECTS)
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+# Generate version files
+generate-version:
+	chmod +x generate_version.sh
+	./generate_version.sh
+
 # Clean build files
 clean:
 	rm -f $(OBJECTS) $(TARGET)

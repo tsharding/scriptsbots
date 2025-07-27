@@ -6,6 +6,16 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <fstream>
+#include <sstream>
+#include <cstdlib>
+#include <algorithm>
+#include <cctype>
+
+// Version function declarations (defined in main.cpp)
+extern std::string getVersion();
+extern std::string getBuildTag();
+extern std::string getFullVersion();
 
 void gl_processNormalKeys(unsigned char key, int x, int y)
 {
@@ -345,7 +355,7 @@ void GLView::handleIdle()
     frames++;
     if ((currentTime - lastUpdate) >= 1000) {
         std::pair<int,int> num_herbs_carns = world->numHerbCarnivores();
-        sprintf( buf, "ScriptBots - World View %dx%d (FPS: %d)", conf::WIDTH(), conf::HEIGHT(), frames );
+        sprintf( buf, "ScriptBots %s - World View %dx%d (FPS: %d)", getFullVersion().c_str(), conf::WIDTH(), conf::HEIGHT(), frames );
         glutSetWindowTitle( buf );
         frames = 0;
         lastUpdate = currentTime;

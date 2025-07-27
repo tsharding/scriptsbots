@@ -2,10 +2,50 @@
 #include "StatsWindow.h"
 #include "World.h"
 #include "Config.h"
+#include <fstream>
+#include <sstream>
+#include <cstdlib>
+#include <ctime>
+#include <algorithm>
 
 #include <GL/glut.h>
 
 #include <stdio.h>
+
+// Version functions
+std::string getVersion() {
+    std::ifstream file("version.txt");
+    if (file.is_open()) {
+        std::string version;
+        std::getline(file, version);
+        file.close();
+        // Remove any whitespace and newlines
+        version.erase(std::remove_if(version.begin(), version.end(), ::isspace), version.end());
+        return version;
+    }
+    return "2.0.0"; // fallback
+}
+
+std::string getBuildTag() {
+    static std::string buildTag = "";
+    if (buildTag.empty()) {
+        // Use current time to generate a pseudo-random 7-character string
+        time_t now = time(nullptr);
+        srand(now);
+        const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        buildTag = "";
+        for (int i = 0; i < 7; ++i) {
+            buildTag += charset[rand() % (sizeof(charset) - 1)];
+        }
+    }
+    return buildTag;
+}
+
+std::string getFullVersion() {
+    std::string version = getVersion();
+    std::string buildTag = getBuildTag();
+    return "v" + version + "+" + buildTag;
+}
 
 // Helper function to calculate window positions that ensure top bars are visible
 void calculateWindowPositions(int worldWidth, int statsWidth, 
@@ -51,14 +91,6 @@ int main(int argc, char **argv) {
     
     if (conf::WIDTH()%conf::CZ()!=0 || conf::HEIGHT()%conf::CZ()!=0) printf("CAREFUL! The cell size variable conf::CZ should divide evenly into both conf::WIDTH and conf::HEIGHT! It doesn't right now!");
     
-    printf("ScriptBots now runs in two windows:\n");
-    printf("- Main window: World visualization\n");
-    printf("- Stats window: Population chart and controls\n");
-    printf("Both windows respond to keyboard input.\n");
-    printf("Usage: %s [--help] [--load <save_file>]\n", argv[0]);
-    printf("  --help: Show this help message and exit\n");
-    printf("  --load <save_file>: Load a save file from the save directory on startup (e.g., manual_save_0.sav)\n");
-    
     World* world = nullptr;
     
     // Handle command-line arguments
@@ -66,6 +98,19 @@ int main(int argc, char **argv) {
         std::string arg1 = argv[1];
         if (arg1 == "--help") {
             // Help requested
+            printf("ScriptBots %s\n", getFullVersion().c_str());
+            printf("ScriptBots now runs in two windows:\n");
+            printf("- Main window: World visualization\n");
+            printf("- Stats window: Population chart and controls\n");
+            printf("Both windows respond to keyboard input.\n");
+            printf("Usage: %s [--help] [--version] [--load <save_file>]\n", argv[0]);
+            printf("  --help: Show this help message and exit\n");
+            printf("  --version: Show version information and exit\n");
+            printf("  --load <save_file>: Load a save file from the save directory on startup (e.g., manual_save_0.sav)\n");
+            return 0;
+        } else if (arg1 == "--version") {
+            // Version requested
+            printf("ScriptBots %s\n", getFullVersion().c_str());
             return 0;
         } else if (arg1 == "--load") {
             if (argc < 3) {
@@ -90,6 +135,16 @@ int main(int argc, char **argv) {
         }
     } else {
         // No arguments provided, create new simulation
+        printf("ScriptBots %s\n", getFullVersion().c_str());
+        printf("ScriptBots now runs in two windows:\n");
+        printf("- Main window: World visualization\n");
+        printf("- Stats window: Population chart and controls\n");
+        printf("Both windows respond to keyboard input.\n");
+        printf("Usage: %s [--help] [--version] [--load <save_file>]\n", argv[0]);
+        printf("  --help: Show this help message and exit\n");
+        printf("  --version: Show version information and exit\n");
+        printf("  --load <save_file>: Load a save file from the save directory on startup (e.g., manual_save_0.sav)\n");
+        
         world = new World();
         GLVIEW->setWorld(world);
     }
@@ -110,7 +165,7 @@ int main(int argc, char **argv) {
     // Create main world window
     glutInitWindowPosition(worldX, worldY);
     glutInitWindowSize(conf::WWIDTH(),conf::WHEIGHT());
-    int mainWindowId = glutCreateWindow("ScriptBots - World View");
+    int mainWindowId = glutCreateWindow(("ScriptBots " + getFullVersion() + " - World View").c_str());
     glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
     glutDisplayFunc(gl_renderScene);
     glutIdleFunc(gl_handleIdle);

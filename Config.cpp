@@ -39,6 +39,7 @@ namespace conf_cache {
     float FOOD_SHARING_DISTANCE = 50.0f;
     float FOOD_DISTRIBUTION_RADIUS = 100.0f;
     float REPMULT = 5.0f;
+    float PROP_INIT_FOOD_FILLED = 0.1f;
     
     // Simulation settings
     int AUTOSAVE_FREQUENCY = 100;
@@ -113,6 +114,7 @@ void Config::cacheValues() {
     conf_cache::FOOD_SHARING_DISTANCE = getFloat("food.sharing_distance", 50.0f);
     conf_cache::FOOD_DISTRIBUTION_RADIUS = getFloat("food.distribution_radius", 100.0f);
     conf_cache::REPMULT = getFloat("evolution.reproduction_multiplier", 5.0f);
+    conf_cache::PROP_INIT_FOOD_FILLED = getFloat("food.initial_fill_proportion", 0.1f);
     
     // Simulation settings
     conf_cache::AUTOSAVE_FREQUENCY = getInt("simulation.autosave_frequency", 100);
@@ -162,6 +164,7 @@ void Config::restoreFromSaveFile(std::ifstream& file) {
     file.read(reinterpret_cast<char*>(&conf_cache::FOOD_SHARING_DISTANCE), sizeof(conf_cache::FOOD_SHARING_DISTANCE));
     file.read(reinterpret_cast<char*>(&conf_cache::FOOD_DISTRIBUTION_RADIUS), sizeof(conf_cache::FOOD_DISTRIBUTION_RADIUS));
     file.read(reinterpret_cast<char*>(&conf_cache::REPMULT), sizeof(conf_cache::REPMULT));
+    file.read(reinterpret_cast<char*>(&conf_cache::PROP_INIT_FOOD_FILLED), sizeof(conf_cache::PROP_INIT_FOOD_FILLED));
     
     // Simulation settings
     file.read(reinterpret_cast<char*>(&conf_cache::AUTOSAVE_FREQUENCY), sizeof(conf_cache::AUTOSAVE_FREQUENCY));

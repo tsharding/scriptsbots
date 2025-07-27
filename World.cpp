@@ -18,9 +18,24 @@ World::World() :
         FH(conf::HEIGHT()/conf::CZ()),
         CLOSED(conf::INITIAL_CLOSED_ENVIRONMENT())
 {
-    addRandomBots(conf::NUMBOTS());
-    //inititalize food layer
+    // Initialize food layer
     food.resize(FW, std::vector<float>(FH, 0));
+    
+    // Fill random food tiles based on configuration
+    int totalTiles = FW * FH;
+    int tilesToFill = static_cast<int>(totalTiles * conf::PROP_INIT_FOOD_FILLED());
+    
+    printf("Initializing world with %d food tiles (%.1f%% of total tiles)\n", 
+           tilesToFill, conf::PROP_INIT_FOOD_FILLED() * 100.0f);
+    
+    for (int i = 0; i < tilesToFill; i++) {
+        int fx = randi(0, FW);
+        int fy = randi(0, FH);
+        food[fx][fy] = conf::FOODMAX();
+    }
+    
+    // Add initial agents after food is placed
+    addRandomBots(conf::NUMBOTS());
     
     numCarnivore.resize(200, 0);
     numHerbivore.resize(200, 0);

@@ -88,6 +88,7 @@ namespace conf_cache {
     extern float FOOD_SHARING_DISTANCE;
     extern float FOOD_DISTRIBUTION_RADIUS;
     extern float REPMULT;
+    extern float PROP_INIT_FOOD_FILLED;
     
     // Simulation settings
     extern int AUTOSAVE_FREQUENCY;
@@ -137,6 +138,7 @@ namespace conf {
     inline float FOOD_SHARING_DISTANCE() { return conf_cache::FOOD_SHARING_DISTANCE; }
     inline float FOOD_DISTRIBUTION_RADIUS() { return conf_cache::FOOD_DISTRIBUTION_RADIUS; }
     inline float REPMULT() { return conf_cache::REPMULT; }
+    inline float PROP_INIT_FOOD_FILLED() { return conf_cache::PROP_INIT_FOOD_FILLED; }
     
     // Simulation settings
     inline int AUTOSAVE_FREQUENCY() { return conf_cache::AUTOSAVE_FREQUENCY; }

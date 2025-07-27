@@ -2,12 +2,7 @@
 #include "StatsWindow.h"
 #include "World.h"
 
-#include "config.h"
-#ifdef LOCAL_GLUT32
-    #include "glut.h"
-#else
-    #include <GL/glut.h>
-#endif
+#include <GL/glut.h>
 
 #include <stdio.h>
 

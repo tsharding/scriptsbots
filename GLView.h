@@ -1,8 +1,6 @@
 #ifndef GLVIEW_H
 #define GLVIEW_H
 
-
-#include "View.h"
 #include "World.h"
 
 class GLView;
@@ -16,16 +14,16 @@ void gl_changeSize(int w, int h);
 void gl_handleIdle();
 void gl_renderScene();
 
-class GLView : public View
+class GLView
 {
 
 public:
     GLView(World* w);
     virtual ~GLView();
     
-    virtual void drawAgent(const Agent &a);
-    virtual void drawFood(int x, int y, float quantity);
-    virtual void drawMisc();
+    void drawAgent(const Agent &a);
+    void drawFood(int x, int y, float quantity);
+    void drawMisc();
     
     void setWorld(World* w);
     

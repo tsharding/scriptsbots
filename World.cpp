@@ -1,4 +1,5 @@
 #include "World.h"
+#include "GLView.h"
 
 #include <ctime>
 
@@ -682,7 +683,7 @@ void World::processMouse(int button, int state, int x, int y)
      }
 }
      
-void World::draw(View* view, bool drawfood)
+void World::draw(GLView* view, bool drawfood)
 {
     //draw food
     if(drawfood) {

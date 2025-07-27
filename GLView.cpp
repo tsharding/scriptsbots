@@ -1,12 +1,7 @@
 #include "GLView.h"
 #include "StatsWindow.h"
 
-#include "config.h"
-#ifdef LOCAL_GLUT32
-#include "glut.h"
-#else
 #include <GL/glut.h>
-#endif
 
 #include <stdio.h>
 #include <sys/stat.h>
@@ -60,7 +55,7 @@ void drawCircle(float x, float y, float r) {
 
 
 GLView::GLView(World *s) :
-        world(world),
+        world(s),
         paused(false),
         draw(true),
         skipdraw(1),

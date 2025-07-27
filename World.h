@@ -1,12 +1,15 @@
 #ifndef WORLD_H
 #define WORLD_H
 
-#include "View.h"
 #include "Agent.h"
 #include "settings.h"
 #include <vector>
 #include <string>
 #include <fstream>
+
+// Forward declaration
+class GLView;
+
 class World
 {
 public:
@@ -16,7 +19,7 @@ public:
     void update();
     void reset();
     
-    void draw(View* view, bool drawfood);
+    void draw(GLView* view, bool drawfood);
     
     bool isClosed() const;
     void setClosed(bool close);

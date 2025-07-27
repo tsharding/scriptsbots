@@ -8,3 +8,7 @@ build/
 # Save files
 *.sav
 scriptbots_save_files/
+
+# Build artifacts
+*.o
+scriptbots

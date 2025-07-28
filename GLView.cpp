@@ -356,7 +356,15 @@ void GLView::handleIdle()
     if ((currentTime - lastUpdate) >= 1000) {
         std::pair<int,int> num_herbs_carns = world->numHerbCarnivores();
         sprintf( buf, "ScriptBots %s - World View %dx%d (FPS: %d)", getFullVersion().c_str(), conf::WIDTH(), conf::HEIGHT(), frames );
+        
+        // Store current window context and set main window title
+        int currentWindow = glutGetWindow();
+        glutSetWindow(1); // Main window is always ID 1 (first created)
         glutSetWindowTitle( buf );
+        if (currentWindow != 1) {
+            glutSetWindow(currentWindow); // Restore previous window context
+        }
+        
         frames = 0;
         lastUpdate = currentTime;
         

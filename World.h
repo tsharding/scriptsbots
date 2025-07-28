@@ -58,6 +58,9 @@ public:
     float getTotalFood() const;
     float getFoodTilePercentage() const;
     
+    // Agent access methods
+    const std::vector<Agent>& getAgents() const { return agents; }
+    
 private:
     void setInputs();
     void processOutputs();

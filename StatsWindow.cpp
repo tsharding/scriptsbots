@@ -3,6 +3,8 @@
 #include "settings.h"
 #include <stdio.h>
 #include <string.h>
+#include <algorithm>
+#include <map>
 
 // Forward declaration of RenderString function (defined in GLView.cpp)
 void RenderString(float x, float y, void *font, const char* string, float r, float g, float b);
@@ -21,6 +23,8 @@ int getTextWidth(const char* string, void* font) {
 extern StatsWindow* STATSWINDOW;
 int StatsWindow::statsWindowId = -1;
 StatsWindow* StatsWindow::instance = nullptr;
+std::map<std::string, int> StatsWindow::lineageMaxPopulations;
+std::map<std::string, int> StatsWindow::lineageMaxAges;
 
 StatsWindow::StatsWindow(World* w) : world(w), currentMaxScale(10.0f)
 {
@@ -59,7 +63,7 @@ void StatsWindow::createWindow(int x, int y)
         glutInitWindowPosition(x, y);
     }
     
-    glutInitWindowSize(500, 800);
+    glutInitWindowSize(800, 800);
     statsWindowId = glutCreateWindow("ScriptBots - Stats & Controls");
     glClearColor(0.95f, 0.95f, 0.95f, 0.0f);
     
@@ -117,9 +121,30 @@ void StatsWindow::renderScene()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
     
+    int windowWidth = glutGet(GLUT_WINDOW_WIDTH);
+    int windowHeight = glutGet(GLUT_WINDOW_HEIGHT);
+    
+    // Draw left side (original content)
+    glViewport(0, 0, windowWidth/2, windowHeight);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(0, windowWidth/2, windowHeight, 0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    
     drawPopulationChart();
     drawStatsInfo();
     drawControlsInfo();
+    
+    // Draw right side (lineage statistics)
+    glViewport(windowWidth/2, 0, windowWidth/2, windowHeight);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(0, windowWidth/2, windowHeight, 0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    
+    drawLineageStats();
     
     glutSwapBuffers();
 }
@@ -128,7 +153,7 @@ void StatsWindow::drawPopulationChart()
 {
     if (!world) return;
     
-    int windowWidth = glutGet(GLUT_WINDOW_WIDTH);
+    int windowWidth = glutGet(GLUT_WINDOW_WIDTH) / 2; // Left side only
     int windowHeight = glutGet(GLUT_WINDOW_HEIGHT);
     
     // Draw chart background
@@ -236,7 +261,7 @@ void StatsWindow::drawStatsInfo()
 {
     if (!world) return;
     
-    int windowWidth = glutGet(GLUT_WINDOW_WIDTH);
+    int windowWidth = glutGet(GLUT_WINDOW_WIDTH) / 2; // Left side only
     int yPos = 220;
     char buf[256];
     
@@ -283,7 +308,7 @@ void StatsWindow::drawStatsInfo()
 
 void StatsWindow::drawControlsInfo()
 {
-    int windowWidth = glutGet(GLUT_WINDOW_WIDTH);
+    int windowWidth = glutGet(GLUT_WINDOW_WIDTH) / 2; // Left side only
     int yPos = 350;
     char buf[256];
     
@@ -373,4 +398,154 @@ void StatsWindow::drawControlsInfo()
     
     sprintf(buf, "Mouse Wheel - Zoom in/out");
     RenderString(20, yPos, GLUT_BITMAP_HELVETICA_12, buf, 0.0f, 0.0f, 0.0f);
+}
+
+std::vector<LineageStats> StatsWindow::calculateTopLineages(int count)
+{
+    std::vector<LineageStats> result;
+    if (!world) return result;
+    
+    // Map to collect lineage data
+    std::map<std::string, LineageStats> lineageMap;
+    
+    // Collect data from all agents
+    for (const auto& agent : world->getAgents()) {
+        std::string tag = agent.lineageTag;
+        
+        if (lineageMap.find(tag) == lineageMap.end()) {
+            lineageMap[tag] = LineageStats();
+            lineageMap[tag].tag = tag;
+        }
+        
+        LineageStats& stats = lineageMap[tag];
+        stats.currentPopulation++;
+        stats.averageGeneration += agent.gencount;
+        
+        // Track current max age for this lineage
+        if (agent.age > stats.currentMaxAge) {
+            stats.currentMaxAge = agent.age;
+        }
+    }
+    
+    // Calculate averages and update historical maximums
+    for (auto& pair : lineageMap) {
+        LineageStats& stats = pair.second;
+        if (stats.currentPopulation > 0) {
+            stats.averageGeneration /= stats.currentPopulation;
+        }
+        
+        // Update historical maximum population if current is higher
+        if (stats.currentPopulation > lineageMaxPopulations[stats.tag]) {
+            lineageMaxPopulations[stats.tag] = stats.currentPopulation;
+        }
+        
+        // Update historical maximum age if current is higher
+        if (stats.currentMaxAge > lineageMaxAges[stats.tag]) {
+            lineageMaxAges[stats.tag] = stats.currentMaxAge;
+        }
+        
+        // Set the max values to the historical maximums
+        stats.maxPopulation = lineageMaxPopulations[stats.tag];
+        stats.allTimeMaxAge = lineageMaxAges[stats.tag];
+    }
+    
+    // Convert to vector and sort by current population
+    std::vector<LineageStats> lineages;
+    for (const auto& pair : lineageMap) {
+        lineages.push_back(pair.second);
+    }
+    
+    // Sort by current population (descending)
+    std::sort(lineages.begin(), lineages.end(), 
+              [](const LineageStats& a, const LineageStats& b) {
+                  return a.currentPopulation > b.currentPopulation;
+              });
+    
+    // Return top 'count' lineages
+    if (lineages.size() > count) {
+        lineages.resize(count);
+    }
+    
+    return lineages;
+}
+
+void StatsWindow::drawLineageTable(const std::vector<LineageStats>& lineages, int startX, int startY)
+{
+    char buf[256];
+    
+    // Draw table header
+    RenderString(startX, startY, GLUT_BITMAP_HELVETICA_12, "Lineage", 0.0f, 0.0f, 0.0f);
+    RenderString(startX + 80, startY, GLUT_BITMAP_HELVETICA_12, "Pop", 0.0f, 0.0f, 0.0f);
+    RenderString(startX + 120, startY, GLUT_BITMAP_HELVETICA_12, "Max", 0.0f, 0.0f, 0.0f);
+    RenderString(startX + 160, startY, GLUT_BITMAP_HELVETICA_12, "Avg Gen", 0.0f, 0.0f, 0.0f);
+    RenderString(startX + 220, startY, GLUT_BITMAP_HELVETICA_12, "Oldest", 0.0f, 0.0f, 0.0f);
+    RenderString(startX + 280, startY, GLUT_BITMAP_HELVETICA_12, "Max Age", 0.0f, 0.0f, 0.0f);
+    
+    startY += 20;
+    
+    // Draw separator line
+    glBegin(GL_LINES);
+    glColor3f(0.3f, 0.3f, 0.3f);
+    glVertex2f(startX, startY - 15);
+    glVertex2f(startX + 330, startY - 15);
+    glEnd();
+    
+    // Draw lineage data
+    for (const auto& lineage : lineages) {
+        // Lineage tag
+        RenderString(startX, startY, GLUT_BITMAP_HELVETICA_10, lineage.tag.c_str(), 0.0f, 0.0f, 0.0f);
+        
+        // Current population
+        sprintf(buf, "%d", lineage.currentPopulation);
+        RenderString(startX + 80, startY, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
+        
+        // Max population
+        sprintf(buf, "%d", lineage.maxPopulation);
+        RenderString(startX + 120, startY, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
+        
+        // Average generation
+        sprintf(buf, "%.1f", lineage.averageGeneration);
+        RenderString(startX + 160, startY, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
+        
+        // Current max age
+        sprintf(buf, "%d", lineage.currentMaxAge);
+        RenderString(startX + 220, startY, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
+        
+        // All-time max age
+        sprintf(buf, "%d", lineage.allTimeMaxAge);
+        RenderString(startX + 280, startY, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
+        
+        startY += 15;
+    }
+}
+
+void StatsWindow::drawLineageStats()
+{
+    if (!world) return;
+    
+    int windowWidth = glutGet(GLUT_WINDOW_WIDTH) / 2; // Right side only
+    int windowHeight = glutGet(GLUT_WINDOW_HEIGHT);
+    
+    // Draw background
+    glBegin(GL_QUADS);
+    glColor3f(0.95f, 0.95f, 0.95f);
+    glVertex2f(0, 0);
+    glVertex2f(windowWidth, 0);
+    glVertex2f(windowWidth, windowHeight);
+    glVertex2f(0, windowHeight);
+    glEnd();
+    
+    // Draw title
+    char buf[256];
+    sprintf(buf, "Top 5 Lineages by Population");
+    RenderString(20, 30, GLUT_BITMAP_HELVETICA_12, buf, 0.0f, 0.0f, 0.0f);
+    
+    // Calculate and draw lineage statistics
+    std::vector<LineageStats> topLineages = calculateTopLineages(5);
+    drawLineageTable(topLineages, 20, 60);
+    
+    // Draw additional information
+    int yPos = 160;
+    sprintf(buf, "Total Lineages: %zu", calculateTopLineages(1000).size());
+    RenderString(20, yPos, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
 } 

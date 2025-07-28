@@ -74,6 +74,7 @@ GLView::GLView(World *s) :
         modcounter(0),
         frames(0),
         lastUpdate(0),
+        currentFPS(0),
         windowWidth(conf::WWIDTH()),
         windowHeight(conf::WHEIGHT())
 {
@@ -98,6 +99,12 @@ GLView::GLView(World *s) :
 GLView::~GLView()
 {
 
+}
+
+int GLView::getCurrentFPS() const
+{
+    // Return the last calculated FPS value
+    return currentFPS;
 }
 void GLView::changeSize(int w, int h)
 {
@@ -355,6 +362,10 @@ void GLView::handleIdle()
     frames++;
     if ((currentTime - lastUpdate) >= 1000) {
         std::pair<int,int> num_herbs_carns = world->numHerbCarnivores();
+        
+        // Store the calculated FPS value
+        currentFPS = frames;
+        
         sprintf( buf, "ScriptBots %s - World View %dx%d (FPS: %d)", getFullVersion().c_str(), conf::WIDTH(), conf::HEIGHT(), frames );
         
         // Store current window context and set main window title

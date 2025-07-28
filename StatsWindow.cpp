@@ -269,7 +269,16 @@ void StatsWindow::drawStatsInfo()
     
     sprintf(buf, "Food Tiles: %.2f%%", world->getFoodTilePercentage());
     RenderString(20, yPos, GLUT_BITMAP_HELVETICA_12, buf, 0.0f, 0.0f, 0.0f);
-    yPos += 20;
+    yPos += 15;
+    
+    // Display current FPS
+    if (GLVIEW) {
+        sprintf(buf, "Current FPS: %d", GLVIEW->getCurrentFPS());
+        RenderString(20, yPos, GLUT_BITMAP_HELVETICA_12, buf, 0.0f, 0.0f, 0.8f);
+        yPos += 15;
+    }
+    
+    yPos += 5;
 }
 
 void StatsWindow::drawControlsInfo()

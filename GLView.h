@@ -27,6 +27,9 @@ public:
     
     void setWorld(World* w);
     
+    // Get current FPS
+    int getCurrentFPS() const;
+    
     //GLUT functions
     void processNormalKeys(unsigned char key, int x, int y);
     void processMouse(int button, int state, int x, int y);
@@ -48,6 +51,7 @@ private:
     int modcounter;
     int lastUpdate;
     int frames;
+    int currentFPS; // Store the last calculated FPS value
     
     
     float scalemult;

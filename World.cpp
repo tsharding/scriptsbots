@@ -879,7 +879,7 @@ bool World::loadFromFile(const std::string& filename)
     // Handle configuration data based on version
     if (version >= 2) {
         // Version 2+ includes configuration data - restore from save file
-        g_config.restoreFromSaveFile(file);
+        g_config.readFromSaveFile(file);
         printf("Loaded configuration from save file (version %d)\n", version);
         
         // Validate critical configuration values to prevent division by zero

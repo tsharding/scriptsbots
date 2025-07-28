@@ -70,7 +70,7 @@ GLView::GLView(World *s) :
         draw(true),
         skipdraw(1),
         drawfood(true),
-        showAgentInfo(true),
+        showAgentInfo(false),
         modcounter(0),
         frames(0),
         lastUpdate(0),

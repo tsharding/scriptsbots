@@ -96,16 +96,18 @@ void World::update()
         }
     }
     
-    // Auto-save based on frequency setting
-    if (modcounter == 0 && current_epoch % conf::AUTOSAVE_FREQUENCY() == 0 && current_epoch > 0) {
-        std::string autosaveName = "autosave_epoch_" + std::to_string(current_epoch) + ".sav";
-        saveToFile(autosaveName);
-        printf("Auto-saved simulation state to %s\n", autosaveName.c_str());
-    }
-    if (modcounter%conf::FOODADDFREQ()==0) {
-        fx=randi(0,FW);
-        fy=randi(0,FH);
-        food[fx][fy]= conf::FOODMAX();
+    if(modcounter%1000==0){
+        // Auto-save based on frequency setting
+        if (modcounter == 0 && current_epoch % conf::AUTOSAVE_FREQUENCY() == 0 && current_epoch > 0) {
+            std::string autosaveName = "autosave_epoch_" + std::to_string(current_epoch) + ".sav";
+            saveToFile(autosaveName);
+            printf("Auto-saved simulation state to %s\n", autosaveName.c_str());
+        }
+        if (modcounter%conf::FOODADDFREQ()==0) {
+            fx=randi(0,FW);
+            fy=randi(0,FH);
+            food[fx][fy]= conf::FOODMAX();
+        }
     }
     
     //reset any counter variables per agent
@@ -191,6 +193,31 @@ void World::update()
         } else {
             ++iter;
         }
+    }
+    
+    // Track lineage extinctions after agents are removed
+    if (STATSWINDOW) {
+        // Get current lineage populations
+        std::map<std::string, int> currentLineagePopulations;
+        for (const auto& agent : agents) {
+            currentLineagePopulations[agent.lineageTag]++;
+        }
+        
+        // Check for extinctions by comparing with previous state
+        static std::map<std::string, int> previousLineagePopulations;
+        for (const auto& pair : previousLineagePopulations) {
+            const std::string& lineageTag = pair.first;
+            int previousPop = pair.second;
+            int currentPop = currentLineagePopulations[lineageTag];
+            
+            // If population went from >0 to 0, lineage went extinct
+            if (previousPop > 0 && currentPop == 0) {
+                STATSWINDOW->trackLineageExtinction(lineageTag, current_epoch, modcounter);
+            }
+        }
+        
+        // Update previous state
+        previousLineagePopulations = currentLineagePopulations;
     }
 
     //handle reproduction
@@ -510,7 +537,7 @@ void World::addRandomBots(int num)
         
         // Track agent creation for lineage statistics
         if (STATSWINDOW) {
-            STATSWINDOW->trackAgentCreation(a.lineageTag);
+            STATSWINDOW->trackAgentCreation(a.lineageTag, a.gencount, current_epoch, modcounter);
         }
     }
 }
@@ -551,7 +578,7 @@ void World::addCarnivore()
     
     // Track agent creation for lineage statistics
     if (STATSWINDOW) {
-        STATSWINDOW->trackAgentCreation(a.lineageTag);
+        STATSWINDOW->trackAgentCreation(a.lineageTag, a.gencount, current_epoch, modcounter);
     }
 }
 
@@ -565,7 +592,7 @@ void World::addHerbivore()
     
     // Track agent creation for lineage statistics
     if (STATSWINDOW) {
-        STATSWINDOW->trackAgentCreation(a.lineageTag);
+        STATSWINDOW->trackAgentCreation(a.lineageTag, a.gencount, current_epoch, modcounter);
     }
 }
 
@@ -581,7 +608,7 @@ void World::addRandomAgents(int num)
         
         // Track agent creation for lineage statistics
         if (STATSWINDOW) {
-            STATSWINDOW->trackAgentCreation(a.lineageTag);
+            STATSWINDOW->trackAgentCreation(a.lineageTag, a.gencount, current_epoch, modcounter);
         }
     }
 }
@@ -617,7 +644,7 @@ void World::addNewByCrossover()
     
     // Track agent creation for lineage statistics
     if (STATSWINDOW) {
-        STATSWINDOW->trackAgentCreation(anew.lineageTag);
+        STATSWINDOW->trackAgentCreation(anew.lineageTag, anew.gencount, current_epoch, modcounter);
     }
 }
 
@@ -636,7 +663,7 @@ void World::reproduce(int ai, float MR, float MR2)
         
         // Track agent creation for lineage statistics
         if (STATSWINDOW) {
-            STATSWINDOW->trackAgentCreation(a2.lineageTag);
+            STATSWINDOW->trackAgentCreation(a2.lineageTag, a2.gencount, current_epoch, modcounter);
         }
 
         //TODO fix recording

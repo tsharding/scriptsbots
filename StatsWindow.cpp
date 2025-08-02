@@ -26,6 +26,12 @@ StatsWindow* StatsWindow::instance = nullptr;
 std::map<std::string, int> StatsWindow::lineageMaxPopulations;
 std::map<std::string, int> StatsWindow::lineageMaxAges;
 std::map<std::string, int> StatsWindow::lineageTotalPopulations;
+std::map<std::string, float> StatsWindow::lineageEmergenceEpochs;
+std::map<std::string, float> StatsWindow::lineageExtinctionEpochs;
+std::map<std::string, int> StatsWindow::lineageMaxGenerations;
+std::vector<LineageStats> StatsWindow::persistentTopLineages;
+std::map<std::string, std::pair<int, int>> StatsWindow::lineageEmergenceTimes;
+std::map<std::string, std::pair<int, int>> StatsWindow::lineageExtinctionTimes;
 
 StatsWindow::StatsWindow(World* w) : world(w), currentMaxScale(10.0f)
 {
@@ -37,9 +43,86 @@ StatsWindow::~StatsWindow()
     instance = nullptr;
 }
 
-void StatsWindow::trackAgentCreation(const std::string& lineageTag)
+void StatsWindow::trackAgentCreation(const std::string& lineageTag, int generation, float currentEpoch, int currentTick)
 {
     lineageTotalPopulations[lineageTag]++;
+    
+    // Track emergence time if this is the first agent of this lineage
+    if (lineageEmergenceTimes.find(lineageTag) == lineageEmergenceTimes.end()) {
+        lineageEmergenceTimes[lineageTag] = std::make_pair(static_cast<int>(currentEpoch), currentTick);
+    }
+    
+    // Track maximum generation
+    if (generation > lineageMaxGenerations[lineageTag]) {
+        lineageMaxGenerations[lineageTag] = generation;
+    }
+    
+    // Update the persistent top lineages list
+    updatePersistentTopLineages();
+}
+
+void StatsWindow::trackLineageExtinction(const std::string& lineageTag, float currentEpoch, int currentTick)
+{
+    // Only set extinction time if it hasn't been set yet
+    if (lineageExtinctionTimes.find(lineageTag) == lineageExtinctionTimes.end() || 
+        (lineageExtinctionTimes[lineageTag].first == 0 && lineageExtinctionTimes[lineageTag].second == 0)) {
+        lineageExtinctionTimes[lineageTag] = std::make_pair(static_cast<int>(currentEpoch), currentTick);
+    }
+    
+    // Update the persistent top lineages list
+    updatePersistentTopLineages();
+}
+
+void StatsWindow::updatePersistentTopLineages()
+{
+    // Create a map of all lineages with their current stats
+    std::map<std::string, LineageStats> allLineages;
+    
+    // Add all lineages from the tracking maps
+    for (const auto& pair : lineageTotalPopulations) {
+        const std::string& tag = pair.first;
+        LineageStats stats;
+        stats.tag = tag;
+        stats.totalPopulation = pair.second;
+        stats.maxPopulation = lineageMaxPopulations[tag];
+        
+        // Get emergence time
+        auto emergenceIt = lineageEmergenceTimes.find(tag);
+        if (emergenceIt != lineageEmergenceTimes.end()) {
+            stats.emergenceEpoch = emergenceIt->second.first;
+            stats.emergenceTick = emergenceIt->second.second;
+        }
+        
+        // Get extinction time
+        auto extinctionIt = lineageExtinctionTimes.find(tag);
+        if (extinctionIt != lineageExtinctionTimes.end()) {
+            stats.extinctionEpoch = extinctionIt->second.first;
+            stats.extinctionTick = extinctionIt->second.second;
+        }
+        
+        stats.maxGeneration = lineageMaxGenerations[tag];
+        
+        allLineages[tag] = stats;
+    }
+    
+    // Convert to vector and sort by total population
+    std::vector<LineageStats> allLineagesVector;
+    for (const auto& pair : allLineages) {
+        allLineagesVector.push_back(pair.second);
+    }
+    
+    std::sort(allLineagesVector.begin(), allLineagesVector.end(), 
+              [](const LineageStats& a, const LineageStats& b) {
+                  return a.totalPopulation > b.totalPopulation;
+              });
+    
+    // Keep only the top 20
+    if (allLineagesVector.size() > 20) {
+        allLineagesVector.resize(20);
+    }
+    
+    // Update the persistent list
+    persistentTopLineages = allLineagesVector;
 }
 
 void StatsWindow::setWorld(World* w)
@@ -69,7 +152,7 @@ void StatsWindow::createWindow(int x, int y)
         glutInitWindowPosition(x, y);
     }
     
-    glutInitWindowSize(900, 800);
+    glutInitWindowSize(900, 1200);
     statsWindowId = glutCreateWindow("ScriptBots - Stats & Controls");
     glClearColor(0.95f, 0.95f, 0.95f, 0.0f);
     
@@ -456,6 +539,11 @@ std::vector<LineageStats> StatsWindow::calculateTopLineages(int count)
         
         // Set the total population from the tracking map
         stats.totalPopulation = lineageTotalPopulations[stats.tag];
+        
+        // Set the new tracking fields
+        stats.emergenceEpoch = lineageEmergenceEpochs[stats.tag];
+        stats.extinctionEpoch = lineageExtinctionEpochs[stats.tag];
+        stats.maxGeneration = lineageMaxGenerations[stats.tag];
     }
     
     // Convert to vector and sort by current population
@@ -476,6 +564,15 @@ std::vector<LineageStats> StatsWindow::calculateTopLineages(int count)
     }
     
     return lineages;
+}
+
+std::vector<LineageStats> StatsWindow::calculateHallOfFameLineages(int count)
+{
+    // Update the persistent list first
+    updatePersistentTopLineages();
+    
+    // Return the persistent list (it's already limited to 20)
+    return persistentTopLineages;
 }
 
 void StatsWindow::drawLineageTable(const std::vector<LineageStats>& lineages, int startX, int startY)
@@ -533,6 +630,66 @@ void StatsWindow::drawLineageTable(const std::vector<LineageStats>& lineages, in
     }
 }
 
+void StatsWindow::drawHallOfFameTable(const std::vector<LineageStats>& lineages, int startX, int startY)
+{
+    char buf[256];
+    
+    // Draw table header
+    RenderString(startX, startY, GLUT_BITMAP_HELVETICA_12, "Lineage", 0.0f, 0.0f, 0.0f);
+    RenderString(startX + 80, startY, GLUT_BITMAP_HELVETICA_12, "Emerged", 0.0f, 0.0f, 0.0f);
+    RenderString(startX + 140, startY, GLUT_BITMAP_HELVETICA_12, "Extinct", 0.0f, 0.0f, 0.0f);
+    RenderString(startX + 200, startY, GLUT_BITMAP_HELVETICA_12, "Total", 0.0f, 0.0f, 0.0f);
+    RenderString(startX + 240, startY, GLUT_BITMAP_HELVETICA_12, "Max", 0.0f, 0.0f, 0.0f);
+    RenderString(startX + 280, startY, GLUT_BITMAP_HELVETICA_12, "Max Gen", 0.0f, 0.0f, 0.0f);
+    
+    startY += 20;
+    
+    // Draw separator line
+    glBegin(GL_LINES);
+    glColor3f(0.3f, 0.3f, 0.3f);
+    glVertex2f(startX, startY - 15);
+    glVertex2f(startX + 320, startY - 15);
+    glEnd();
+    
+    // Draw lineage data
+    for (const auto& lineage : lineages) {
+        // Lineage tag
+        RenderString(startX, startY, GLUT_BITMAP_HELVETICA_10, lineage.tag.c_str(), 0.0f, 0.0f, 0.0f);
+        
+        // Emergence epoch (format as Epoch.Ticks)
+        int emergenceEpoch = lineage.emergenceEpoch + (lineage.emergenceTick / 10000);
+        int emergenceTick = lineage.emergenceTick % 10000;
+        float emergenceTime = emergenceEpoch + (emergenceTick / 10000.0f);
+        sprintf(buf, "%.3f", emergenceTime);
+        RenderString(startX + 80, startY, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
+        
+        // Extinction epoch (show "NA" if still alive)
+        if (lineage.extinctionEpoch == 0 && lineage.extinctionTick == 0) {
+            RenderString(startX + 140, startY, GLUT_BITMAP_HELVETICA_10, "NA", 0.0f, 0.0f, 0.0f);
+        } else {
+            int extinctionEpoch = lineage.extinctionEpoch + (lineage.extinctionTick / 10000);
+            int extinctionTick = lineage.extinctionTick % 10000;
+            float extinctionTime = extinctionEpoch + (extinctionTick / 10000.0f);
+            sprintf(buf, "%.3f", extinctionTime);
+            RenderString(startX + 140, startY, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
+        }
+        
+        // Total population
+        sprintf(buf, "%d", lineage.totalPopulation);
+        RenderString(startX + 200, startY, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
+        
+        // Max population
+        sprintf(buf, "%d", lineage.maxPopulation);
+        RenderString(startX + 240, startY, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
+        
+        // Max generation
+        sprintf(buf, "%d", lineage.maxGeneration);
+        RenderString(startX + 280, startY, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
+        
+        startY += 15;
+    }
+}
+
 void StatsWindow::drawLineageStats()
 {
     if (!world) return;
@@ -549,17 +706,25 @@ void StatsWindow::drawLineageStats()
     glVertex2f(0, windowHeight);
     glEnd();
     
-    // Draw title
+    // Draw first table title
     char buf[256];
-    sprintf(buf, "Top 5 Lineages by Population");
+    sprintf(buf, "Top 5 Current Lineages");
     RenderString(20, 30, GLUT_BITMAP_HELVETICA_12, buf, 0.0f, 0.0f, 0.0f);
     
-    // Calculate and draw lineage statistics
+    // Calculate and draw current lineage statistics
     std::vector<LineageStats> topLineages = calculateTopLineages(5);
     drawLineageTable(topLineages, 20, 60);
     
+    // Draw second table title
+    sprintf(buf, "Lineage Hall of Fame");
+    RenderString(20, 200, GLUT_BITMAP_HELVETICA_12, buf, 0.0f, 0.0f, 0.0f);
+    
+    // Calculate and draw hall of fame statistics
+    std::vector<LineageStats> hallOfFameLineages = calculateHallOfFameLineages(20);
+    drawHallOfFameTable(hallOfFameLineages, 20, 230);
+    
     // Draw additional information
-    int yPos = 160;
+    int yPos = 600;
     sprintf(buf, "Total Lineages: %zu", calculateTopLineages(1000).size());
     RenderString(20, yPos, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
 } 

@@ -2,6 +2,7 @@
 #define HELPERS_H
 #include <stdlib.h>
 #include <math.h>
+#include <string>
 //uniform random in [a,b)
 inline float randf(float a, float b){return ((b-a)*((float)rand()/RAND_MAX))+a;}
 
@@ -35,5 +36,14 @@ inline float cap(float a){
 	if (a<0) return 0;
 	if (a>1) return 1;
 	return a;
+}
+
+// Generate a random 5-character alpha tag
+inline std::string generateLineageTag() {
+    std::string tag = "";
+    for (int i = 0; i < 5; i++) {
+        tag += (char)('A' + randi(0, 26));
+    }
+    return tag;
 }
 #endif

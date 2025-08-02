@@ -1,10 +1,15 @@
 #ifndef WORLD_H
 #define WORLD_H
 
-#include "View.h"
 #include "Agent.h"
 #include "settings.h"
 #include <vector>
+#include <string>
+#include <fstream>
+
+// Forward declaration
+class GLView;
+
 class World
 {
 public:
@@ -14,7 +19,7 @@ public:
     void update();
     void reset();
     
-    void draw(View* view, bool drawfood);
+    void draw(GLView* view, bool drawfood);
     
     bool isClosed() const;
     void setClosed(bool close);
@@ -37,12 +42,24 @@ public:
     void addRandomBots(int num);
     void addCarnivore();
     void addHerbivore();
+    void addRandomAgents(int num);
     
     void positionOfInterest(int type, float &xi, float &yi);
     
+    // Save/Load functionality
+    std::string getSaveDirectory() const;
+    bool saveToFile(const std::string& filename);
+    bool loadFromFile(const std::string& filename);
+    
     std::vector<int> numCarnivore;
-    std::vector<int> numHerbivore; 
-    int ptr;
+    std::vector<int> numHerbivore;
+    
+    // Food statistics methods
+    float getTotalFood() const;
+    float getFoodTilePercentage() const;
+    
+    // Agent access methods
+    const std::vector<Agent>& getAgents() const { return agents; }
     
 private:
     void setInputs();
@@ -64,7 +81,7 @@ private:
     int FH;
     int fx;
     int fy;
-    float food[conf::WIDTH/conf::CZ][conf::HEIGHT/conf::CZ];
+    std::vector<std::vector<float>> food;
     bool CLOSED; //if environment is closed, then no random bots are added per time interval
 };
 

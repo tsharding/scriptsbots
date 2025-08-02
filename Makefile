@@ -1,11 +1,11 @@
 CXX = g++
-CXXFLAGS = -std=c++11 -Wall -Wextra -O2
+CXXFLAGS = -std=c++11 -Wall -Wextra -O2 -DHAVE_OPENMP
 GLUT_FLAGS = $(shell pkg-config --cflags --libs glut)
 OPENGL_FLAGS = -lGL -lGLU
 OPENMP_FLAGS = -fopenmp
 
 # Source files
-SOURCES = View.cpp GLView.cpp main.cpp DWRAONBrain.cpp MLPBrain.cpp AssemblyBrain.cpp Agent.cpp World.cpp vmath.cpp
+SOURCES = GLView.cpp StatsWindow.cpp main.cpp MLPBrain.cpp Agent.cpp World.cpp vmath.cpp Config.cpp
 
 # Object files
 OBJECTS = $(SOURCES:.cpp=.o)
@@ -24,6 +24,11 @@ $(TARGET): $(OBJECTS)
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+# Generate version files
+generate-version:
+	chmod +x generate_version.sh
+	./generate_version.sh
+
 # Clean build files
 clean:
 	rm -f $(OBJECTS) $(TARGET)
@@ -31,6 +36,6 @@ clean:
 # Install dependencies (Ubuntu/Debian)
 install-deps:
 	sudo apt update
-	sudo apt install -y build-essential cmake freeglut3-dev libgl1-mesa-dev libglu1-mesa-dev
+	sudo apt install -y build-essential freeglut3-dev libgl1-mesa-dev libglu1-mesa-dev
 
 .PHONY: all clean install-deps 

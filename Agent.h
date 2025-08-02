@@ -1,8 +1,6 @@
 #ifndef AGENT_H
 #define AGENT_H
 
-#include "DWRAONBrain.h"
-#include "AssemblyBrain.h"
 #include "MLPBrain.h"
 #include "vmath.h"
 
@@ -23,6 +21,10 @@ public:
     void tick();
     Agent reproduce(float MR, float MR2);
     Agent crossover(const Agent &other);
+    
+    // Save/Load functionality
+    void saveToStream(std::ofstream& file) const;
+    void loadFromStream(std::ifstream& file);
     
     Vector2f pos;
 
@@ -65,7 +67,6 @@ public:
     float herbivore; //is this agent a herbivore? between 0 and 1
     float MUTRATE1; //how often do mutations occur?
     float MUTRATE2; //how significant are they?
-    float temperature_preference; //what temperature does this agent like? [0 to 1]
     
     float smellmod;
     float soundmod;
@@ -76,13 +77,14 @@ public:
     std::vector<float> eyefov; //field of view for each eye
     std::vector<float> eyedir; //direction of each eye
     
-//    DWRAONBrain brain; //THE BRAIN!!!!
-//    AssemblyBrain brain;
     MLPBrain brain;
     
     //will store the mutations that this agent has from its parent
     //can be used to tune the mutation rate
     std::vector<std::string> mutations;
+    
+    // Lineage tracking
+    std::string lineageTag; // 5-character alpha tag for lineage tracking
 };
 
 #endif // AGENT_H

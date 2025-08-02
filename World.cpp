@@ -210,6 +210,9 @@ void World::update()
             int previousPop = pair.second;
             int currentPop = currentLineagePopulations[lineageTag];
             
+            // Update max population before extinction
+            STATSWINDOW->trackCurrentPopulation(lineageTag, previousPop);
+            
             // If population went from >0 to 0, lineage went extinct
             if (previousPop > 0 && currentPop == 0) {
                 STATSWINDOW->trackLineageExtinction(lineageTag, current_epoch, modcounter);

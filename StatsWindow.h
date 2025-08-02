@@ -55,6 +55,9 @@ public:
     // Static function to track lineage extinction
     static void trackLineageExtinction(const std::string& lineageTag, float currentEpoch, int currentTick);
     
+    // Static function to track current population changes
+    static void trackCurrentPopulation(const std::string& lineageTag, int currentPopulation);
+    
 private:
     World* world;
     static int statsWindowId;

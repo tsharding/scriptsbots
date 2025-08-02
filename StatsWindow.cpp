@@ -73,6 +73,14 @@ void StatsWindow::trackLineageExtinction(const std::string& lineageTag, float cu
     updatePersistentTopLineages();
 }
 
+void StatsWindow::trackCurrentPopulation(const std::string& lineageTag, int currentPopulation)
+{
+    // Update max population if current population is higher
+    if (currentPopulation > lineageMaxPopulations[lineageTag]) {
+        lineageMaxPopulations[lineageTag] = currentPopulation;
+    }
+}
+
 void StatsWindow::updatePersistentTopLineages()
 {
     // Create a map of all lineages with their current stats
@@ -83,8 +91,12 @@ void StatsWindow::updatePersistentTopLineages()
         const std::string& tag = pair.first;
         LineageStats stats;
         stats.tag = tag;
-        stats.totalPopulation = pair.second;
-        stats.maxPopulation = lineageMaxPopulations[tag];
+        
+        // Ensure total population is at least 1 for any lineage that has ever existed
+        stats.totalPopulation = std::max(1, pair.second);
+        
+        // Ensure max population is at least 1 for any lineage that has ever existed
+        stats.maxPopulation = std::max(1, lineageMaxPopulations[tag]);
         
         // Get emergence time
         auto emergenceIt = lineageEmergenceTimes.find(tag);

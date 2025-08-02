@@ -675,9 +675,9 @@ void StatsWindow::drawHallOfFameTable(const std::vector<LineageStats>& lineages,
         sprintf(buf, "%.3f", emergenceTime);
         RenderString(startX + 80, startY, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
         
-        // Extinction epoch (show "NA" if still alive)
+        // Extinction epoch (show "--" if still alive)
         if (lineage.extinctionEpoch == 0 && lineage.extinctionTick == 0) {
-            RenderString(startX + 140, startY, GLUT_BITMAP_HELVETICA_10, "NA", 0.0f, 0.0f, 0.0f);
+            RenderString(startX + 140, startY, GLUT_BITMAP_HELVETICA_10, "--", 0.0f, 0.0f, 0.0f);
         } else {
             int extinctionEpoch = lineage.extinctionEpoch + (lineage.extinctionTick / 10000);
             int extinctionTick = lineage.extinctionTick % 10000;

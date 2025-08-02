@@ -5,6 +5,7 @@
 #include <string.h>
 #include <algorithm>
 #include <map>
+#include <fstream> // Added for file I/O
 
 // Forward declaration of RenderString function (defined in GLView.cpp)
 void RenderString(float x, float y, void *font, const char* string, float r, float g, float b);
@@ -79,6 +80,163 @@ void StatsWindow::trackCurrentPopulation(const std::string& lineageTag, int curr
     if (currentPopulation > lineageMaxPopulations[lineageTag]) {
         lineageMaxPopulations[lineageTag] = currentPopulation;
     }
+}
+
+void StatsWindow::saveLineageData(std::ofstream& file)
+{
+    // Save total populations
+    size_t totalPopSize = lineageTotalPopulations.size();
+    file.write(reinterpret_cast<const char*>(&totalPopSize), sizeof(totalPopSize));
+    for (const auto& pair : lineageTotalPopulations) {
+        size_t tagLength = pair.first.length();
+        file.write(reinterpret_cast<const char*>(&tagLength), sizeof(tagLength));
+        file.write(pair.first.c_str(), tagLength);
+        file.write(reinterpret_cast<const char*>(&pair.second), sizeof(pair.second));
+    }
+    
+    // Save max populations
+    size_t maxPopSize = lineageMaxPopulations.size();
+    file.write(reinterpret_cast<const char*>(&maxPopSize), sizeof(maxPopSize));
+    for (const auto& pair : lineageMaxPopulations) {
+        size_t tagLength = pair.first.length();
+        file.write(reinterpret_cast<const char*>(&tagLength), sizeof(tagLength));
+        file.write(pair.first.c_str(), tagLength);
+        file.write(reinterpret_cast<const char*>(&pair.second), sizeof(pair.second));
+    }
+    
+    // Save emergence times
+    size_t emergenceSize = lineageEmergenceTimes.size();
+    file.write(reinterpret_cast<const char*>(&emergenceSize), sizeof(emergenceSize));
+    for (const auto& pair : lineageEmergenceTimes) {
+        size_t tagLength = pair.first.length();
+        file.write(reinterpret_cast<const char*>(&tagLength), sizeof(tagLength));
+        file.write(pair.first.c_str(), tagLength);
+        file.write(reinterpret_cast<const char*>(&pair.second.first), sizeof(pair.second.first));
+        file.write(reinterpret_cast<const char*>(&pair.second.second), sizeof(pair.second.second));
+    }
+    
+    // Save extinction times
+    size_t extinctionSize = lineageExtinctionTimes.size();
+    file.write(reinterpret_cast<const char*>(&extinctionSize), sizeof(extinctionSize));
+    for (const auto& pair : lineageExtinctionTimes) {
+        size_t tagLength = pair.first.length();
+        file.write(reinterpret_cast<const char*>(&tagLength), sizeof(tagLength));
+        file.write(pair.first.c_str(), tagLength);
+        file.write(reinterpret_cast<const char*>(&pair.second.first), sizeof(pair.second.first));
+        file.write(reinterpret_cast<const char*>(&pair.second.second), sizeof(pair.second.second));
+    }
+    
+    // Save max generations
+    size_t maxGenSize = lineageMaxGenerations.size();
+    file.write(reinterpret_cast<const char*>(&maxGenSize), sizeof(maxGenSize));
+    for (const auto& pair : lineageMaxGenerations) {
+        size_t tagLength = pair.first.length();
+        file.write(reinterpret_cast<const char*>(&tagLength), sizeof(tagLength));
+        file.write(pair.first.c_str(), tagLength);
+        file.write(reinterpret_cast<const char*>(&pair.second), sizeof(pair.second));
+    }
+}
+
+void StatsWindow::loadLineageData(std::ifstream& file)
+{
+    // Clear existing data
+    lineageTotalPopulations.clear();
+    lineageMaxPopulations.clear();
+    lineageEmergenceTimes.clear();
+    lineageExtinctionTimes.clear();
+    lineageMaxGenerations.clear();
+    persistentTopLineages.clear();
+    
+    // Check if there's data to read
+    std::streampos currentPos = file.tellg();
+    file.seekg(0, std::ios::end);
+    std::streampos endPos = file.tellg();
+    file.seekg(currentPos);
+    
+    if (currentPos >= endPos) {
+        // No data to read, just return with cleared data
+        updatePersistentTopLineages();
+        return;
+    }
+    
+    try {
+        // Load total populations
+        size_t totalPopSize;
+        file.read(reinterpret_cast<char*>(&totalPopSize), sizeof(totalPopSize));
+        for (size_t i = 0; i < totalPopSize; ++i) {
+            size_t tagLength;
+            file.read(reinterpret_cast<char*>(&tagLength), sizeof(tagLength));
+            std::string tag(tagLength, '\0');
+            file.read(&tag[0], tagLength);
+            int totalPop;
+            file.read(reinterpret_cast<char*>(&totalPop), sizeof(totalPop));
+            lineageTotalPopulations[tag] = totalPop;
+        }
+        
+        // Load max populations
+        size_t maxPopSize;
+        file.read(reinterpret_cast<char*>(&maxPopSize), sizeof(maxPopSize));
+        for (size_t i = 0; i < maxPopSize; ++i) {
+            size_t tagLength;
+            file.read(reinterpret_cast<char*>(&tagLength), sizeof(tagLength));
+            std::string tag(tagLength, '\0');
+            file.read(&tag[0], tagLength);
+            int maxPop;
+            file.read(reinterpret_cast<char*>(&maxPop), sizeof(maxPop));
+            lineageMaxPopulations[tag] = maxPop;
+        }
+        
+        // Load emergence times
+        size_t emergenceSize;
+        file.read(reinterpret_cast<char*>(&emergenceSize), sizeof(emergenceSize));
+        for (size_t i = 0; i < emergenceSize; ++i) {
+            size_t tagLength;
+            file.read(reinterpret_cast<char*>(&tagLength), sizeof(tagLength));
+            std::string tag(tagLength, '\0');
+            file.read(&tag[0], tagLength);
+            int epoch, tick;
+            file.read(reinterpret_cast<char*>(&epoch), sizeof(epoch));
+            file.read(reinterpret_cast<char*>(&tick), sizeof(tick));
+            lineageEmergenceTimes[tag] = std::make_pair(epoch, tick);
+        }
+        
+        // Load extinction times
+        size_t extinctionSize;
+        file.read(reinterpret_cast<char*>(&extinctionSize), sizeof(extinctionSize));
+        for (size_t i = 0; i < extinctionSize; ++i) {
+            size_t tagLength;
+            file.read(reinterpret_cast<char*>(&tagLength), sizeof(tagLength));
+            std::string tag(tagLength, '\0');
+            file.read(&tag[0], tagLength);
+            int epoch, tick;
+            file.read(reinterpret_cast<char*>(&epoch), sizeof(epoch));
+            file.read(reinterpret_cast<char*>(&tick), sizeof(tick));
+            lineageExtinctionTimes[tag] = std::make_pair(epoch, tick);
+        }
+        
+        // Load max generations
+        size_t maxGenSize;
+        file.read(reinterpret_cast<char*>(&maxGenSize), sizeof(maxGenSize));
+        for (size_t i = 0; i < maxGenSize; ++i) {
+            size_t tagLength;
+            file.read(reinterpret_cast<char*>(&tagLength), sizeof(tagLength));
+            std::string tag(tagLength, '\0');
+            file.read(&tag[0], tagLength);
+            int maxGen;
+            file.read(reinterpret_cast<char*>(&maxGen), sizeof(maxGen));
+            lineageMaxGenerations[tag] = maxGen;
+        }
+    } catch (...) {
+        // If any error occurs during loading, clear all data
+        lineageTotalPopulations.clear();
+        lineageMaxPopulations.clear();
+        lineageEmergenceTimes.clear();
+        lineageExtinctionTimes.clear();
+        lineageMaxGenerations.clear();
+    }
+    
+    // Update persistent top lineages after loading
+    updatePersistentTopLineages();
 }
 
 void StatsWindow::updatePersistentTopLineages()

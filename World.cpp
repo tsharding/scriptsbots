@@ -799,7 +799,7 @@ bool World::saveToFile(const std::string& filename)
     file.write(header, 15);
     
     // Write version number (for backward compatibility)
-    int version = 2; // Version 2 includes configuration data
+    int version = 3; // Version 3 includes lineage tracking data
     file.write(reinterpret_cast<const char*>(&version), sizeof(version));
     
     // Write configuration values to ensure save/load compatibility
@@ -884,6 +884,11 @@ bool World::saveToFile(const std::string& filename)
     file.write(reinterpret_cast<const char*>(&numAgents), sizeof(numAgents));
     for (const Agent& agent : agents) {
         agent.saveToStream(file);
+    }
+    
+    // Save lineage tracking data
+    if (STATSWINDOW) {
+        STATSWINDOW->saveLineageData(file);
     }
     
     file.close();
@@ -1013,6 +1018,20 @@ bool World::loadFromFile(const std::string& filename)
         Agent agent;
         agent.loadFromStream(file);
         agents.push_back(agent);
+    }
+    
+    // Load lineage tracking data (if available in version 3+)
+    if (STATSWINDOW && version >= 3) {
+        try {
+            STATSWINDOW->loadLineageData(file);
+        } catch (...) {
+            // If lineage data loading fails, clear existing data and continue
+            printf("Warning: Could not load lineage data from save file, clearing existing data\n");
+            STATSWINDOW->loadLineageData(file); // This will clear the data
+        }
+    } else if (STATSWINDOW && version < 3) {
+        // Clear existing lineage data for old save files
+        STATSWINDOW->loadLineageData(file); // This will clear the data
     }
     
     file.close();

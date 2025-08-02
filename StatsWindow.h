@@ -58,6 +58,10 @@ public:
     // Static function to track current population changes
     static void trackCurrentPopulation(const std::string& lineageTag, int currentPopulation);
     
+    // Save/load lineage tracking data
+    static void saveLineageData(std::ofstream& file);
+    static void loadLineageData(std::ifstream& file);
+    
 private:
     World* world;
     static int statsWindowId;

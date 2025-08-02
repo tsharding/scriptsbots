@@ -112,11 +112,13 @@ void World::update()
             saveToFile(autosaveName);
             printf("Auto-saved simulation state to %s\n", autosaveName.c_str());
         }
-        if (modcounter%conf::FOODADDFREQ()==0) {
-            fx=randi(0,FW);
-            fy=randi(0,FH);
-            food[fx][fy]= conf::FOODMAX();
-        }
+    }
+    
+    // Food addition - happens at the configured frequency
+    if (modcounter%conf::FOODADDFREQ()==0) {
+        fx=randi(0,FW);
+        fy=randi(0,FH);
+        food[fx][fy]= conf::FOODMAX();
     }
     
     //reset any counter variables per agent

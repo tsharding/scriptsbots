@@ -737,6 +737,22 @@ void StatsWindow::drawLineageStats()
     
     // Draw additional information
     int yPos = 600;
-    sprintf(buf, "Total Lineages: %zu", calculateTopLineages(1000).size());
+    
+    // Calculate current lineages (those with current population > 0)
+    std::vector<LineageStats> currentLineages = calculateTopLineages(1000);
+    size_t currentLineageCount = 0;
+    for (const auto& lineage : currentLineages) {
+        if (lineage.currentPopulation > 0) {
+            currentLineageCount++;
+        }
+    }
+    
+    // Calculate all-time lineages (total number of lineages that have ever existed)
+    size_t allTimeLineageCount = lineageTotalPopulations.size();
+    
+    sprintf(buf, "Total current lineages: %zu", currentLineageCount);
     RenderString(20, yPos, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
+    
+    sprintf(buf, "Total all-time lineages: %zu", allTimeLineageCount);
+    RenderString(20, yPos + 20, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
 } 

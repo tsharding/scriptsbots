@@ -25,6 +25,7 @@ int StatsWindow::statsWindowId = -1;
 StatsWindow* StatsWindow::instance = nullptr;
 std::map<std::string, int> StatsWindow::lineageMaxPopulations;
 std::map<std::string, int> StatsWindow::lineageMaxAges;
+std::map<std::string, int> StatsWindow::lineageTotalPopulations;
 
 StatsWindow::StatsWindow(World* w) : world(w), currentMaxScale(10.0f)
 {
@@ -34,6 +35,11 @@ StatsWindow::StatsWindow(World* w) : world(w), currentMaxScale(10.0f)
 StatsWindow::~StatsWindow()
 {
     instance = nullptr;
+}
+
+void StatsWindow::trackAgentCreation(const std::string& lineageTag)
+{
+    lineageTotalPopulations[lineageTag]++;
 }
 
 void StatsWindow::setWorld(World* w)
@@ -63,7 +69,7 @@ void StatsWindow::createWindow(int x, int y)
         glutInitWindowPosition(x, y);
     }
     
-    glutInitWindowSize(800, 800);
+    glutInitWindowSize(900, 800);
     statsWindowId = glutCreateWindow("ScriptBots - Stats & Controls");
     glClearColor(0.95f, 0.95f, 0.95f, 0.0f);
     
@@ -447,6 +453,9 @@ std::vector<LineageStats> StatsWindow::calculateTopLineages(int count)
         // Set the max values to the historical maximums
         stats.maxPopulation = lineageMaxPopulations[stats.tag];
         stats.allTimeMaxAge = lineageMaxAges[stats.tag];
+        
+        // Set the total population from the tracking map
+        stats.totalPopulation = lineageTotalPopulations[stats.tag];
     }
     
     // Convert to vector and sort by current population
@@ -477,9 +486,10 @@ void StatsWindow::drawLineageTable(const std::vector<LineageStats>& lineages, in
     RenderString(startX, startY, GLUT_BITMAP_HELVETICA_12, "Lineage", 0.0f, 0.0f, 0.0f);
     RenderString(startX + 80, startY, GLUT_BITMAP_HELVETICA_12, "Pop", 0.0f, 0.0f, 0.0f);
     RenderString(startX + 120, startY, GLUT_BITMAP_HELVETICA_12, "Max", 0.0f, 0.0f, 0.0f);
-    RenderString(startX + 160, startY, GLUT_BITMAP_HELVETICA_12, "Avg Gen", 0.0f, 0.0f, 0.0f);
-    RenderString(startX + 220, startY, GLUT_BITMAP_HELVETICA_12, "Oldest", 0.0f, 0.0f, 0.0f);
-    RenderString(startX + 280, startY, GLUT_BITMAP_HELVETICA_12, "Max Age", 0.0f, 0.0f, 0.0f);
+    RenderString(startX + 160, startY, GLUT_BITMAP_HELVETICA_12, "Total", 0.0f, 0.0f, 0.0f);
+    RenderString(startX + 200, startY, GLUT_BITMAP_HELVETICA_12, "Avg Gen", 0.0f, 0.0f, 0.0f);
+    RenderString(startX + 260, startY, GLUT_BITMAP_HELVETICA_12, "Oldest", 0.0f, 0.0f, 0.0f);
+    RenderString(startX + 320, startY, GLUT_BITMAP_HELVETICA_12, "Max Age", 0.0f, 0.0f, 0.0f);
     
     startY += 20;
     
@@ -487,7 +497,7 @@ void StatsWindow::drawLineageTable(const std::vector<LineageStats>& lineages, in
     glBegin(GL_LINES);
     glColor3f(0.3f, 0.3f, 0.3f);
     glVertex2f(startX, startY - 15);
-    glVertex2f(startX + 330, startY - 15);
+    glVertex2f(startX + 380, startY - 15);
     glEnd();
     
     // Draw lineage data
@@ -503,17 +513,21 @@ void StatsWindow::drawLineageTable(const std::vector<LineageStats>& lineages, in
         sprintf(buf, "%d", lineage.maxPopulation);
         RenderString(startX + 120, startY, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
         
+        // Total population
+        sprintf(buf, "%d", lineage.totalPopulation);
+        RenderString(startX + 160, startY, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
+        
         // Average generation
         sprintf(buf, "%.1f", lineage.averageGeneration);
-        RenderString(startX + 160, startY, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
+        RenderString(startX + 200, startY, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
         
         // Current max age
         sprintf(buf, "%d", lineage.currentMaxAge);
-        RenderString(startX + 220, startY, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
+        RenderString(startX + 260, startY, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
         
         // All-time max age
         sprintf(buf, "%d", lineage.allTimeMaxAge);
-        RenderString(startX + 280, startY, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
+        RenderString(startX + 320, startY, GLUT_BITMAP_HELVETICA_10, buf, 0.0f, 0.0f, 0.0f);
         
         startY += 15;
     }

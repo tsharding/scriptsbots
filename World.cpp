@@ -1,5 +1,6 @@
 #include "World.h"
 #include "GLView.h"
+#include "StatsWindow.h"
 
 #include <ctime>
 
@@ -506,6 +507,11 @@ void World::addRandomBots(int num)
         a.id= idcounter;
         idcounter++;
         agents.push_back(a);
+        
+        // Track agent creation for lineage statistics
+        if (STATSWINDOW) {
+            STATSWINDOW->trackAgentCreation(a.lineageTag);
+        }
     }
 }
 
@@ -542,6 +548,11 @@ void World::addCarnivore()
     idcounter++;
     a.herbivore= randf(0, 0.1);
     agents.push_back(a);
+    
+    // Track agent creation for lineage statistics
+    if (STATSWINDOW) {
+        STATSWINDOW->trackAgentCreation(a.lineageTag);
+    }
 }
 
 void World::addHerbivore()
@@ -551,6 +562,11 @@ void World::addHerbivore()
     idcounter++;
     a.herbivore= randf(0.9, 1);
     agents.push_back(a);
+    
+    // Track agent creation for lineage statistics
+    if (STATSWINDOW) {
+        STATSWINDOW->trackAgentCreation(a.lineageTag);
+    }
 }
 
 void World::addRandomAgents(int num)
@@ -562,6 +578,11 @@ void World::addRandomAgents(int num)
         // Random herbivore value between 0 and 1 (0 = carnivore, 1 = herbivore)
         a.herbivore = randf(0, 1);
         agents.push_back(a);
+        
+        // Track agent creation for lineage statistics
+        if (STATSWINDOW) {
+            STATSWINDOW->trackAgentCreation(a.lineageTag);
+        }
     }
 }
 
@@ -593,6 +614,11 @@ void World::addNewByCrossover()
     anew.id= idcounter;
     idcounter++;
     agents.push_back(anew);
+    
+    // Track agent creation for lineage statistics
+    if (STATSWINDOW) {
+        STATSWINDOW->trackAgentCreation(anew.lineageTag);
+    }
 }
 
 void World::reproduce(int ai, float MR, float MR2)
@@ -607,6 +633,11 @@ void World::reproduce(int ai, float MR, float MR2)
         a2.id= idcounter;
         idcounter++;
         agents.push_back(a2);
+        
+        // Track agent creation for lineage statistics
+        if (STATSWINDOW) {
+            STATSWINDOW->trackAgentCreation(a2.lineageTag);
+        }
 
         //TODO fix recording
         //record this

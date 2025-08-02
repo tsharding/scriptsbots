@@ -12,11 +12,12 @@ struct LineageStats {
     std::string tag;
     int currentPopulation;
     int maxPopulation;
+    int totalPopulation;  // Total cumulative population for this lineage
     float averageGeneration;
     int currentMaxAge;
     int allTimeMaxAge;
     
-    LineageStats() : currentPopulation(0), maxPopulation(0), averageGeneration(0.0f), currentMaxAge(0), allTimeMaxAge(0) {}
+    LineageStats() : currentPopulation(0), maxPopulation(0), totalPopulation(0), averageGeneration(0.0f), currentMaxAge(0), allTimeMaxAge(0) {}
 };
 
 class StatsWindow
@@ -43,6 +44,9 @@ public:
     // Update function
     void updateDisplay();
     
+    // Static function to track agent creation for lineage statistics
+    static void trackAgentCreation(const std::string& lineageTag);
+    
 private:
     World* world;
     static int statsWindowId;
@@ -53,6 +57,8 @@ private:
     static std::map<std::string, int> lineageMaxPopulations;
     // Track all-time maximum age for each lineage
     static std::map<std::string, int> lineageMaxAges;
+    // Track total cumulative population for each lineage
+    static std::map<std::string, int> lineageTotalPopulations;
     
     void drawPopulationChart();
     void drawControlsInfo();

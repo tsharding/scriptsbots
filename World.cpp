@@ -537,7 +537,7 @@ void World::processOutputs()
                         if (agents[i].health>2) agents[i].health=2; //cap health at 2
                         agents[i].spikeLength= 0; //retract spike back down
 
-                        agents[i].initEvent(40*DMG,1,1,0); //yellow event means bot has spiked other bot. nice!
+                        agents[i].initEvent(10*DMG,1,1,0); //yellow event means bot has spiked other bot. nice!
 
                         Vector2f v2(1,0);
                         v2.rotate(a2->angle);
